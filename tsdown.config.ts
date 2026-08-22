@@ -10,7 +10,7 @@ export default defineConfig({
     to: 'dist'
   },
   dts: {
-    sourcemap: true
+    sourcemap: false
   },
   entry: {
     browser: 'src/browser.client.ts',
@@ -23,6 +23,6 @@ export default defineConfig({
   minify: false,
   platform: 'neutral',
   plugins: [orbzCssPlugin()],
-  sourcemap: true,
+  sourcemap: false,
   target: 'es2022'
 })

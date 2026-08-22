@@ -15,6 +15,6 @@ export default defineConfig({
   minify: true,
   platform: 'browser',
   plugins: [orbzCssPlugin()],
-  sourcemap: true,
+  sourcemap: false,
   target: 'es2022'
 })
