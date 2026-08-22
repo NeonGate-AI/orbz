@@ -1,0 +1,119 @@
+---
+title: Philosophy
+description: Why Orbz uses a small, standards-based visual contract instead of framework-specific implementations.
+---
+
+# The philosophy behind Orbz
+
+Orbz starts with a deliberately small idea: an assistant's visual presence
+should not have to be rebuilt every time the surrounding application changes
+framework.
+
+The browser already has a shared component model. Orbz uses it. The native
+`<orb-z>` element exposes the same states, appearance controls, and motion
+controls in plain HTML, Vue, Svelte, Angular, React, Next.js, or a mixed
+microfrontend page.
+
+## One contract, many hosts
+
+Framework integrations usually drift. A React wrapper gains a feature that the
+Vue component does not have; an Angular implementation chooses different
+defaults; the plain JavaScript version is forgotten. Orbz keeps one native
+implementation and lets frameworks bind to its public attributes and
+properties.
+
+That gives every host the same vocabulary:
+
+- five assistant states: `idle`, `listening`, `thinking`, `speaking`, `asleep`
+- one `preset` attribute or five custom color attributes
+- `size`, `speed`, `paused`, `elevated`, and `reduced-motion`
+- `play()`, `pause()`, and `restart()` methods
+
+The [six examples](/examples) intentionally present the same interface. Their
+framework code is different; the component contract and user experience are
+not.
+
+## A visual primitive, not an assistant SDK
+
+Orbz owns visual expression. Your application owns everything that gives that
+expression meaning:
+
+- microphone permission and audio capture
+- speech recognition and synthesis
+- model requests, tool calls, and streaming
+- turn-taking, cancellation, errors, and retries
+- transcripts, buttons, labels, and other semantic UI
+
+This boundary keeps the package useful with any voice vendor, AI SDK, state
+manager, or backend. An application translates its domain events into one of
+the five Orbz states; Orbz renders the corresponding presence.
+
+See [Building a voice assistant](/guides/voice-assistant) for a practical state
+mapping.
+
+## Strict by design
+
+The supported surface is intentionally attribute-driven. Orbz does not expose
+Shadow DOM parts, public CSS variables, or framework-specific component adapters.
+
+Strictness serves three purposes:
+
+1. **Portability.** The same configuration means the same thing in every host.
+2. **Stability.** Internal layers and animation details can evolve without
+   becoming accidental public APIs.
+3. **Consistency.** Product teams customize the intended tokens instead of
+   replacing the component one selector at a time.
+
+When a product needs a distinct visual identity, it can choose a built-in
+preset or provide the five documented colors. When it needs different
+semantics or interaction, those belong in the application around the orb.
+
+## Isolation is an implementation promise
+
+Each instance creates a **closed Shadow DOM**. Its markup, styles, and animation
+layers are private. Page CSS cannot reach in and rewrite them, and Orbz does
+not leak its internal selectors into the page.
+
+Closed does not mean inaccessible. Orbz is a decorative visual primitive, so
+the internal graphic is hidden from assistive technology. The host application
+provides an accessible label or, preferably, nearby live status text that
+describes the assistant's current state.
+
+## Server-safe, browser-native
+
+The package can be imported during server rendering without evaluating an
+`HTMLElement` subclass at module scope. Registration is guarded and
+idempotent: on a server it is a no-op, and in a browser it defines `orb-z` only
+when the tag is not already registered.
+
+This makes the native element compatible with server-rendered shells while
+preserving a browser-native runtime. The server can emit the element; the
+client upgrades it when Orbz is registered. The React entry adds a strict
+Client Component adapter for React and Next.js projects that prefer JSX props.
+
+Read [SSR and hydration](/guides/ssr) for the recommended patterns.
+
+## Repository layout is not the runtime architecture
+
+The Orbz repository uses workspace tooling to develop the package and its
+examples together. That does not make consumers part of a monorepo and does
+not make the examples part of the published package.
+
+Each showcase can be deployed as an independent Vercel project and consume
+`@neongate-ai/orbz` from npm. A microfrontend shell can do the same. The durable
+boundary is the published package and the `<orb-z>` contract—not the repository
+folder structure.
+
+## The test for a new feature
+
+Before extending the public surface, ask:
+
+- Is this a visual concern shared by every framework?
+- Can it be expressed as a small, serializable attribute or typed property?
+- Can its behavior stay deterministic across native HTML and adapters?
+- Does it preserve the closed, strict component boundary?
+- Can applications still provide accessible meaning outside the orb?
+
+If the answer is no, the feature probably belongs in the host application. A
+small contract is not a limitation; it is what lets one component remain one
+component everywhere.

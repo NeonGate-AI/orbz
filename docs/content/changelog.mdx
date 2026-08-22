@@ -1,0 +1,363 @@
+---
+title: Changelog
+description: Release notes and migration guidance for the public Orbz package.
+---
+
+# Changelog
+
+This page records user-facing changes to the public
+`@neongate-ai/orbz` package, the `<orb-z>` custom-element contract, and its
+supported integration paths.
+
+The implementation source of truth is the
+[GitHub repository](https://github.com/NeonGate-AI/orbz). Published releases
+are available on [npm](https://www.npmjs.com/package/@neongate-ai/orbz), and
+the complete documentation is available at
+[orbz.site](https://orbz.site).
+
+## 0.2.0 — 2026-08-21
+
+Orbz `0.2.0` expands the original visual assistant component into a
+voice-capable, framework-agnostic custom element. This release introduces a
+talk runtime, interchangeable speech and intelligence ports, stricter
+appearance controls, stronger encapsulation, and a single native integration
+model for every supported framework.
+
+> **Breaking pre-1.0 release:** applications using the `0.1.0` `colors`
+> property, public CSS variables, Shadow Parts, open Shadow DOM, or
+> `@neongate-ai/orbz/react` must migrate.
+
+### Voice and talk runtime
+
+* Added an automatic deterministic talk flow that starts after the element's
+  first connected render.
+* Added the built-in `welcoming`, `askName`, `help`, and `answer` steps through
+  the public `talk` object and `DEFAULT_TALK_FLOW`.
+* Added runtime-only talk memory. The default flow captures the visitor's name
+  and makes it available through `talkContext` without writing to cookies,
+  local storage, IndexedDB, or a backend.
+* Added `startTalking()` to reset the current runtime context and restart the
+  configured flow.
+* Added `receive(input)` so host applications can continue an active ask or
+  response step with text collected from their own interface.
+* Added `stopTalking()` to stop the active flow and voice output.
+* Added the configurable `voiceEngine`, `talkFlow`, and `intelligence`
+  properties.
+* Added `OrbzTalkStep`, `OrbzTalkContext`, and `OrbzVoiceOptions` as public
+  TypeScript contracts.
+* Added `OrbzVoiceEnginePort` so applications can replace speech output without
+  changing the component.
+* Added `OrbzIntelligencePort` so applications can connect an agent or other
+  response provider while keeping product logic and credentials outside Orbz.
+* Added local fallback responses when no intelligence provider is configured
+  or when the configured provider fails.
+* Added the `orbz-speaking-change` event with
+  `{ speaking: boolean }` detail.
+* Added the `orbz-talk-error` event with the original error in
+  `{ error: unknown }` detail.
+* Made Orbz temporarily enter the `speaking` visual state while audio is
+  playing and restore its previous visual state afterward.
+* Kept microphone capture, speech recognition, permissions, transcripts, and
+  text-input ownership in the host application. Orbz only receives text passed
+  through `receive()`.
+
+### Browser speech
+
+* Added `WebSpeechAdapter` as the zero-configuration default voice engine.
+* Changed the default speech locale to `en-US`.
+* Made browser speech wait for the asynchronously loaded voice list before
+  choosing a voice.
+* Added explicit English-language filtering instead of accepting an unrelated
+  operating-system default voice.
+* Added preferred-voice selection for configured voices and higher-quality
+  Google, Microsoft, natural, neural, premium, enhanced, or online voices when
+  the browser exposes them.
+* Added configurable language, preferred voices, rate, pitch, volume, and voice
+  loading timeout.
+* Added detection for speech that fails to start instead of leaving the talk
+  flow indefinitely pending.
+* Made first-render speech retry automatically after the first pointer,
+  keyboard, or touch interaction when the browser blocks automatic audio with
+  `NotAllowedError`.
+* Removed the example behavior that depended on remounting the element through
+  **Reset all** before speech could begin.
+* Clarified that browser speech still uses voices provided by the visitor's
+  browser and operating system. Voice selection can be improved, but a system
+  voice does not become an OpenAI-generated voice.
+
+### OpenAI speech
+
+* Added `OpenAISpeechAdapter` for application-proxied OpenAI text-to-speech.
+* Configured the adapter to use `gpt-4o-mini-tts`, the `marin` voice, MP3
+  output, and natural American-English delivery instructions by default.
+* Added configurable model, voice, response format, instructions, credentials,
+  headers, and fetch implementation.
+* Added compatibility with legacy `tts-1` and `tts-1-hd` models, including a
+  compatible default voice and omission of unsupported instructions.
+* Kept the OpenAI API key outside the browser and outside the Orbz package. The
+  adapter calls an implementer-owned endpoint that returns generated audio.
+* Added cancellation of pending speech requests when output is stopped or
+  replaced.
+* Added cleanup of generated audio object URLs after playback, cancellation, or
+  failure.
+* Added browser-activation error handling so generated audio can participate in
+  the same first-interaction retry lifecycle as browser speech.
+
+### Appearance and component API
+
+* Replaced the open `colors` property with two strict and mutually exclusive
+  appearance modes:
+
+  * a `preset` attribute or property;
+  * the five `color-primary`, `color-secondary`, `color-accent`,
+    `color-highlight`, and `color-background` attributes.
+* Added six built-in presets: `neongate`, `periwinkle`, `magenta`, `peach`,
+  `mocha`, and `ivory`.
+* Made preset mode and custom-color mode mutually exclusive. When both are
+  present, Orbz reports a conflict, applies the preset, and ignores the custom
+  colors until the preset attribute is removed.
+* Added the `elevated` boolean attribute and property for an optional centered
+  shadow.
+* Retained the five public visual states: `idle`, `listening`, `thinking`,
+  `speaking`, and `asleep`.
+* Retained positive speed multipliers, size normalization, pause and play
+  controls, animation restart, and the `system`, `always`, and `never`
+  reduced-motion policies.
+* Retained public constants, guards, and normalizers for states, presets,
+  reduced motion, size, speed, and color configuration.
+* Changed the Shadow DOM from open to closed.
+* Removed public Shadow Parts and external `::part(...)` styling.
+* Removed public `--orbz-*` CSS-variable customization. Internal selectors and
+  variables are now private implementation details.
+* Moved the component's source styles to `src/element/index.css`, retained them
+  inside the closed shadow root, and emitted the same stylesheet as
+  `dist/index.css`.
+
+### Framework integration and package entry points
+
+* Removed the framework-specific React component and the
+  `@neongate-ai/orbz/react` package entry.
+* Removed React as a package peer dependency and development dependency from
+  the Orbz runtime package.
+* Standardized every framework integration on the literal `<orb-z>` custom
+  element.
+* Updated React and Next.js integrations to register the browser entry and
+  render `<orb-z>` directly.
+* Added local JSX intrinsic-element declarations to the React and Next.js
+  examples for TypeScript awareness without introducing a wrapper component.
+* Kept `@neongate-ai/orbz` as the side-effect-free package entry for types,
+  constants, adapters, ports, factories, and explicit registration helpers.
+* Kept `@neongate-ai/orbz/browser` as the browser entry that registers
+  `<orb-z>`.
+* Kept `@neongate-ai/orbz/standalone` as the self-registering standalone
+  browser bundle for CDN and direct-script integrations.
+* Kept custom-element class creation and registration guarded for
+  server-rendered environments.
+* Kept `defineOrbz()` idempotent when multiple bundles or microfrontends attempt
+  to register the element.
+* Renamed the advanced element-class creator to
+  `orbzElementClassFactory()`.
+* Moved browser registration side effects into the explicit browser entry
+  instead of evaluating them from the package root.
+
+### Build, packaging, and internal organization
+
+* Added a `prepack` lifecycle that runs strict TypeScript validation and a fresh
+  package build before `npm pack` or `npm publish`.
+* Restricted the npm package payload to generated `dist` artifacts plus the
+  package files npm includes automatically, such as `package.json`,
+  `README.md`, and `LICENSE`.
+* Kept documentation, examples, internal agent instructions, source files, and
+  workspace configuration outside the npm tarball.
+* Added explicit `.ts` extensions to shared tsdown configuration imports so the
+  build works with Node's native TypeScript configuration loading.
+* Reorganized internal source modules around `core`, `element`, `factories`,
+  `ports`, `services`, and `talk`.
+* Renamed the former `voice` source area to `talk`.
+* Consolidated related type declarations into `.types.ts` modules.
+* Removed redundant `orbz` prefixes from internal source filenames while
+  retaining the public `Orbz*` symbol names.
+* Flattened unnecessary single-file source directories.
+* Removed the React runtime implementation from the package source entirely.
+
+### Examples and documentation
+
+* Added synchronized Vanilla, React, Vue, Svelte, Angular, and Next.js
+  showcases built around the same `<orb-z>` interface.
+* Updated example reset controls to reset state without remounting the custom
+  element.
+* Replaced the original VitePress scaffold with a Nextra documentation site.
+* Added getting-started documentation for native, framework, and CDN
+  integrations.
+* Added concepts documentation for philosophy, states, appearance, motion, and
+  accessibility.
+* Added framework, microfrontend, SSR, and voice-assistant guides.
+* Added complete element and package-export API references.
+* Added examples, troubleshooting, and migration guidance.
+* Established [orbz.site](https://orbz.site) as the main documentation
+  destination.
+* Established framework-specific subdomains as deployment destinations for the
+  synchronized examples.
+
+[View `0.2.0` on npm](https://www.npmjs.com/package/@neongate-ai/orbz/v/0.2.0)
+
+### Migrating from 0.1.0
+
+#### Replace the React adapter
+
+Remove imports from the former React entry:
+
+```tsx
+import { Orbz } from "@neongate-ai/orbz/react";
+
+export function Assistant() {
+  return <Orbz state="idle" />;
+}
+```
+
+Register the browser entry and render the native custom element instead:
+
+```tsx
+import "@neongate-ai/orbz/browser";
+
+export function Assistant() {
+  return <orb-z state="idle"></orb-z>;
+}
+```
+
+Add a local JSX intrinsic-element declaration when TypeScript does not yet
+recognize `orb-z`. This declaration provides compile-time awareness only; it
+does not create a React component.
+
+#### Replace the color API
+
+Remove the former `colors` object:
+
+```ts
+orb.colors = {
+  primary: "#7C3AED",
+  secondary: "#22D3EE"
+};
+```
+
+Use a built-in preset:
+
+```html
+<orb-z preset="neongate"></orb-z>
+```
+
+Or use the five supported custom-color attributes without a `preset`:
+
+```html
+<orb-z
+  color-primary="#7C3AED"
+  color-secondary="#22D3EE"
+  color-accent="#F472B6"
+  color-highlight="#FDE68A"
+  color-background="#09090B"
+></orb-z>
+```
+
+Do not combine an explicit preset with custom-color attributes unless the
+preset is intentionally expected to take precedence.
+
+#### Remove external Shadow DOM customization
+
+Remove integrations that depend on:
+
+* `element.shadowRoot`;
+* internal selectors;
+* `::part(...)`;
+* public `--orbz-*` CSS variables;
+* assumptions about internal DOM structure.
+
+Use the documented attributes, properties, methods, ports, adapters, events,
+and exports instead.
+
+#### Register the custom element explicitly
+
+Use the browser entry when the current module should register `<orb-z>`:
+
+```ts
+import "@neongate-ai/orbz/browser";
+```
+
+Use the package root when importing types or utilities without browser side
+effects:
+
+```ts
+import {
+  defineOrbz,
+  type OrbzElement
+} from "@neongate-ai/orbz";
+```
+
+Call `defineOrbz()` explicitly when registration needs to be controlled by the
+host application.
+
+#### Account for first-render speech
+
+Orbz now schedules its talk flow after its first connected render.
+
+When creating an element programmatically, assign `voiceEngine`, `talkFlow`,
+and `intelligence` before appending it so the first run uses the intended
+configuration:
+
+```ts
+import {
+  OpenAISpeechAdapter,
+  type OrbzElement
+} from "@neongate-ai/orbz";
+
+const orb = document.createElement("orb-z") as OrbzElement;
+
+orb.voiceEngine = new OpenAISpeechAdapter({
+  endpoint: "/api/orbz/speech"
+});
+
+document.body.append(orb);
+```
+
+Browsers may require user activation before audio can begin. Orbz retries the
+flow on the first interaction when automatic playback is blocked.
+
+## 0.1.0 — Initial public release
+
+* Published the first `@neongate-ai/orbz` package on npm.
+* Established Orbz as a framework-agnostic AI voice visual built with Web
+  Components.
+* Shipped the five assistant states: `idle`, `listening`, `thinking`,
+  `speaking`, and `asleep`.
+* Shipped configurable size, motion speed, pause and play controls, animation
+  restart, and reduced-motion profiles.
+* Added SSR-safe custom-element creation and registration.
+* Added the browser registration entry and standalone browser bundle.
+* Added the initial React adapter.
+* Exposed color overrides through a JavaScript `colors` property.
+* Exposed public `--orbz-*` CSS variables.
+* Used open Shadow DOM and named Shadow Parts for external customization.
+
+[View `0.1.0` on npm](https://www.npmjs.com/package/@neongate-ai/orbz/v/0.1.0)
+
+## Versioning expectations
+
+The documented attributes, properties, methods, events, ports, adapters,
+types, constants, and package exports are public API.
+
+While Orbz remains below version `1.0.0`:
+
+* incompatible public API changes increment the minor version;
+* backward-compatible public capabilities increment the minor version;
+* backward-compatible fixes increment the patch version.
+
+After Orbz reaches version `1.0.0`:
+
+* incompatible public API changes increment the major version;
+* backward-compatible capabilities increment the minor version;
+* backward-compatible fixes increment the patch version.
+
+Examples, documentation, deployment configuration, and internal source
+organization may evolve without creating additional public runtime contracts.
+They demonstrate and explain the published package but do not become part of
+the npm API unless they are explicitly exported or included in the documented
+component contract.

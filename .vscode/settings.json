@@ -1,0 +1,76 @@
+{
+  "explorer.compactFolders": false,
+  "explorer.confirmDelete": false,
+
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "always",
+    "source.organizeImports": "never"
+  },
+  "biome.lspBinPath": "${workspaceFolder}/node_modules/.bin/biome",
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+
+  "css.lint.unknownAtRules": "ignore",
+  "css.lint.emptyRules": "ignore",
+
+  "scss.lint.unknownAtRules": "ignore",
+  "less.lint.unknownAtRules": "ignore",
+  "git.ignoreLimitWarning": true,
+
+  "todohighlight.defaultStyle": {
+    "borderRadius": "2px",
+    "isWholeLine": true,
+    "backgroundColor": "rgba(0,0,0,.2)"
+  },
+  "todohighlight.keywords": [
+  {
+    "text": "TODOS:",
+    "color": "#7FDBCA",
+    "border": "1px solid #7FDBCA",
+  },
+  {
+    "text": "FIX:",
+    "color": "#FF5F56",
+    "border": "1px solid #FF5F56",
+  },
+  {
+    "text": "HACK:",
+    "color": "#C678DD",
+    "border": "1px solid #C678DD",
+  },
+  {
+    "text": "NOTE:",
+    "color": "#61AFEF",
+    "border": "1px solid #61AFEF",
+  },
+  {
+    "text": "SECURITY:",
+    "color": "#f9d544",
+    "border": "1px solid #f9d544",
+  },
+  {
+    "text": "REFACTOR:",
+    "color": "#67c94a",
+    "border": "1px solid #67c94a",
+  },
+  {
+    "text": "DEBUG:",
+    "color": "#ff00b9",
+    "border": "1px solid #ff00b9",
+  }
+  ],
+  "todohighlight.include": [
+      "**/*.gitignore"
+  ]
+}
+

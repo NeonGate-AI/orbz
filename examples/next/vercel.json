@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "corepack enable && pnpm install --frozen-lockfile --filter @neongate-ai/orbz --filter @orbz/example-next",
+  "buildCommand": "pnpm --filter @neongate-ai/orbz build && pnpm --filter @orbz/example-next build"
+}

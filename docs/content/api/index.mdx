@@ -1,0 +1,196 @@
+---
+title: Element API
+description: Complete reference for Orbz attributes, properties, methods, states, colors, and normalization.
+---
+
+# Element API
+
+The native public surface is the `<orb-z>` tag, its documented attributes,
+voice properties, talk methods, and animation methods. Internal Shadow DOM
+nodes and CSS variables are intentionally not public customization points.
+
+## Attributes and properties
+
+| HTML attribute | JavaScript property | Accepted value | Default |
+| --- | --- | --- | --- |
+| `state` | `state` | `idle`, `listening`, `thinking`, `speaking`, `asleep` | `idle` |
+| `size` | `size` | Non-empty CSS length; property also accepts a positive number in pixels | `16rem` |
+| `speed` | `speed` | Positive number | `1` |
+| `paused` | `paused` | Boolean presence / `boolean` property | `false` |
+| `elevated` | `elevated` | Boolean presence / `boolean` property | `false` |
+| `reduced-motion` | `reducedMotion` | `system`, `always`, `never` | `system` |
+| `preset` | `preset` | `neongate`, `periwinkle`, `magenta`, `peach`, `mocha`, `ivory` | NeonGate colors |
+| `color-primary` | — | CSS color | NeonGate primary |
+| `color-secondary` | — | CSS color | NeonGate secondary |
+| `color-accent` | — | CSS color | NeonGate accent |
+| `color-highlight` | — | CSS color | NeonGate highlight |
+| `color-background` | — | CSS color | NeonGate core color |
+
+The five custom colors are native attributes. They are not separate native element properties.
+
+## Voice properties
+
+Voice configuration uses JavaScript properties because engines and talk steps
+are structured values rather than HTML strings.
+
+| Property | Type | Default |
+| --- | --- | --- |
+| `voiceEngine` | `OrbzVoiceEnginePort \| undefined` | `WebSpeechAdapter` |
+| `talkFlow` | `readonly OrbzTalkStep[] \| undefined` | `DEFAULT_TALK_FLOW` |
+| `talkContext` | Read-only `OrbzTalkContext` | Empty runtime memory |
+| `intelligence` | `OrbzIntelligencePort \| undefined` | `undefined` |
+
+Set a custom engine or flow before appending a programmatically created
+element so the mandatory first utterance uses that configuration.
+Assigning `undefined` restores the corresponding built-in default.
+
+## States
+
+| State | Visual intent |
+| --- | --- |
+| `idle` | Calm presence while the assistant waits |
+| `listening` | Alert feedback while input is captured |
+| `thinking` | Focused processing motion |
+| `speaking` | Energetic motion while a response plays |
+| `asleep` | Quiet, dimmed rest or disabled state |
+
+```js
+const orb = document.querySelector("orb-z");
+if (orb) orb.state = "thinking";
+```
+
+An unsupported value normalizes to `idle`. When an invalid non-null attribute
+is observed, Orbz writes the normalized value back to the attribute.
+
+## Size and speed
+
+The `size` property accepts either a number or string:
+
+```ts
+orb.size = 320;      // "320px"
+orb.size = "20rem"; // "20rem"
+orb.size = "40vw";  // "40vw"
+```
+
+A non-finite or non-positive numeric size falls back to `16rem`. String values
+are trimmed; pass a valid, non-empty CSS length for predictable layout.
+
+`speed` is a positive multiplier. Invalid, zero, negative, or non-finite
+values normalize to `1`.
+
+```ts
+orb.speed = 0.8;
+orb.speed = 1.25;
+```
+
+## Boolean semantics
+
+`paused` and `elevated` are standard boolean attributes. Their presence is
+true—even when the literal attribute value is `"false"`.
+
+```html
+<orb-z paused></orb-z>
+<orb-z elevated></orb-z>
+```
+
+```ts
+orb.paused = false;   // removes the paused attribute
+orb.elevated = true;  // adds the elevated attribute
+```
+
+`paused` freezes the active animation. `elevated` adds a centered shadow around
+the circular component and does not change layout dimensions.
+
+## Reduced motion
+
+| Value | Behavior |
+| --- | --- |
+| `system` | Follow `prefers-reduced-motion` and respond to preference changes |
+| `always` | Always render the reduced-motion presentation |
+| `never` | Always render the full motion profile |
+
+Invalid values normalize to `system`. `paused` and reduced motion are different:
+paused freezes the current presentation; reduced motion selects a calmer
+presentation.
+
+## Presets
+
+| Name | Primary | Secondary | Accent | Highlight | Background |
+| --- | --- | --- | --- | --- | --- |
+| `neongate` | `#6C5CFF` | `#00E9FF` | `#FF4DDE` | `#FFB07A` | `#14142B` |
+| `periwinkle` | `#6667AB` | `#8FB8FF` | `#E66FA9` | `#F3ECFF` | `#111226` |
+| `magenta` | `#BB2649` | `#F06A82` | `#29B8A6` | `#FFDCE4` | `#250A12` |
+| `peach` | `#FFBE98` | `#FF8F70` | `#D987A3` | `#FFF0E7` | `#2A1516` |
+| `mocha` | `#A47864` | `#D3A17E` | `#7FA18F` | `#F2E2D7` | `#211613` |
+| `ivory` | `#F0EEE9` | `#AFC7D3` | `#C8B3D4` | `#FFFFFF` | `#171A20` |
+
+```html
+<orb-z preset="ivory"></orb-z>
+```
+
+An invalid preset normalizes to `neongate`. The public API is named `preset`;
+there is no `palette` attribute or property.
+
+## Custom palette
+
+Omit the `preset` attribute and set one or more custom colors:
+
+```html
+<orb-z
+  color-primary="#7C3AED"
+  color-secondary="#22D3EE"
+  color-accent="#F472B6"
+  color-highlight="#FDE68A"
+  color-background="#09090B"
+></orb-z>
+```
+
+Empty values are removed and missing colors use the NeonGate defaults. An
+explicit preset and custom colors are mutually exclusive. When both are
+present, the preset wins, the custom colors are ignored, and Orbz logs one
+conflict error. Removing `preset` activates the still-present custom colors.
+
+The `preset` property getter always returns a normalized preset name, including
+`neongate` when the attribute is absent. Use `hasAttribute("preset")` when you
+need to distinguish explicit preset mode from custom-color mode. Assigning
+`null` or `undefined` to the preset setter removes the attribute.
+
+## Methods
+
+| Method | Effect |
+| --- | --- |
+| `pause()` | Pause the active animation and reflect the paused state |
+| `play()` | Resume the active animation and clear the paused state |
+| `restart()` | Rebuild the current state's animation from its beginning |
+| `startTalking()` | Reset runtime talk memory and run the configured flow |
+| `receive(input)` | Pass text to the current ask or response step |
+| `stopTalking()` | Stop the current voice engine and talk run |
+
+```ts
+import type { OrbzElement } from "@neongate-ai/orbz";
+
+const orb = document.querySelector<OrbzElement>("orb-z");
+
+orb?.pause();
+orb?.play();
+orb?.restart();
+await orb?.receive('Jonatas');
+```
+
+Orbz automatically calls `startTalking()` after its first connection. The
+default flow stores the captured name only in the current element instance.
+See [Voice and talk runtime](/guides/voice-assistant) for custom flows and
+engines.
+
+## Observed attributes
+
+`ORBZ_OBSERVED_ATTRIBUTES` contains the exact reactive attribute list:
+
+```text
+state, size, speed, paused, elevated, preset, reduced-motion,
+color-accent, color-background, color-highlight,
+color-primary, color-secondary
+```
+
+Changing one of these attributes after connection synchronizes the component.
+See [Package exports](/api/exports) for the constants and TypeScript types.

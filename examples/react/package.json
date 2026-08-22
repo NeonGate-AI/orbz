@@ -1,0 +1,26 @@
+{
+  "name": "@orbz/example-react",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0 --strictPort --port 9001"
+  },
+  "dependencies": {
+    "@neongate-ai/orbz": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitejs/plugin-react": "6.0.5",
+    "typescript": "7.0.2",
+    "vite": "8.2.1"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "corepack enable && pnpm install --frozen-lockfile --filter @neongate-ai/orbz --filter @orbz/example-vue",
+  "buildCommand": "pnpm --filter @neongate-ai/orbz build && pnpm --filter @orbz/example-vue build",
+  "outputDirectory": "dist"
+}

@@ -1,0 +1,179 @@
+---
+title: Package exports
+description: Reference for Orbz entry points, constants, types, utilities, and registration helpers.
+---
+
+# Package exports
+
+Orbz separates pure API access, guarded browser registration, and the standalone
+browser bundle. Every framework renders the native `<orb-z>` element.
+
+## Entry-point map
+
+| Import | Exposes | Side effect |
+| --- | --- | --- |
+| `@neongate-ai/orbz` | Native element, talk-runtime types, constants, presets, normalization helpers, `orbzElementClassFactory()`, and `defineOrbz()` | Does not register the tag |
+| `@neongate-ai/orbz/browser` | Everything from the root entry | Calls `defineOrbz()` |
+| `@neongate-ai/orbz/standalone` | Self-contained browser build of the browser entry | Calls `defineOrbz()` |
+| `@neongate-ai/orbz/index.css` | The same source stylesheet embedded into the closed shadow root | None |
+| `@neongate-ai/orbz/package.json` | Published package metadata | None |
+
+The browser and standalone entry points are marked as side-effectful in the
+package manifest so bundlers retain their registration call.
+
+## Root entry
+
+Use the root entry for explicit registration and reusable domain types:
+
+```ts
+import {
+  defineOrbz,
+  ORBZ_PRESETS,
+  ORBZ_STATES,
+  type OrbzElement,
+  type OrbzPresetName,
+  type OrbzState,
+} from "@neongate-ai/orbz";
+
+defineOrbz();
+
+const nextState: OrbzState = "listening";
+const preset: OrbzPresetName = "neongate";
+const colors = ORBZ_PRESETS[preset];
+const orb = document.querySelector<OrbzElement>("orb-z");
+
+if (orb) orb.state = nextState;
+```
+
+Importing the root module alone never registers `orb-z`. Call `defineOrbz()` or
+import `/browser` when a page should upgrade the tag.
+
+## Constants
+
+| Export | Meaning |
+| --- | --- |
+| `ORBZ_TAG_NAME` | The string `"orb-z"` |
+| `ORBZ_OBSERVED_ATTRIBUTES` | Reactive native attribute names |
+| `ORBZ_STATES` | All supported assistant states |
+| `ORBZ_REDUCED_MOTION_MODES` | `system`, `always`, and `never` |
+| `ORBZ_PRESET_NAMES` | All six preset names |
+| `ORBZ_PRESETS` | Frozen color values for every preset |
+| `ORBZ_COLOR_ATTRIBUTES` | Map from color keys to native attribute names |
+| `ORBZ_COLOR_KEYS` | The five color keys |
+| `DEFAULT_ORBZ_STATE` | `idle` |
+| `DEFAULT_ORBZ_SIZE` | `16rem` |
+| `DEFAULT_ORBZ_SPEED` | `1` |
+| `DEFAULT_ORBZ_REDUCED_MOTION` | `system` |
+| `DEFAULT_ORBZ_PRESET` | `neongate` |
+| `DEFAULT_ORBZ_COLORS` | The NeonGate preset colors |
+| `config` | Frozen namespace exposing the package constants, including `config.ORBZ_STATES` |
+| `talk` | Frozen built-in deterministic talk-step catalog |
+| `DEFAULT_TALK_FLOW` | Welcome, ask-name, help, and optional response sequence |
+
+The arrays and preset records are useful for generating validated controls
+without copying the package's accepted values.
+
+```ts
+import { ORBZ_PRESET_NAMES, ORBZ_STATES } from "@neongate-ai/orbz";
+
+for (const state of ORBZ_STATES) {
+  stateSelect.add(new Option(state, state));
+}
+
+for (const preset of ORBZ_PRESET_NAMES) {
+  presetSelect.add(new Option(preset, preset));
+}
+```
+
+## Types
+
+| Export | Shape |
+| --- | --- |
+| `OrbzState` | Union of the five state names |
+| `OrbzReducedMotion` | `"system" \| "always" \| "never"` |
+| `OrbzPresetName` | Union of the six preset names |
+| `OrbzSize` | `number \| string` |
+| `OrbzColors` | Required `primary`, `secondary`, `accent`, `highlight`, and `background` strings |
+| `OrbzColorOverrides` | Partial `OrbzColors` |
+| `OrbzBaseOptions` | State, size, speed, pause, elevation, and reduced-motion options |
+| `OrbzPresetOptions` | Preset mode; custom color keys are `never` |
+| `OrbzCustomColorOptions` | Custom-color mode; `preset` is `never` |
+| `OrbzColorSelection` | Union of preset and custom-color mode |
+| `OrbzOptions` | Base options combined with the color selection union |
+| `OrbzElement` | Native element properties and playback methods |
+| `OrbzElementConstructor` | Typed custom-element constructor |
+| `OrbzTalkStep` | Typed deterministic or intelligence-backed talk step |
+| `OrbzTalkContext` | In-memory values captured by the talk runner |
+| `OrbzVoiceOptions` | Optional voice engine, talk flow, and intelligence configuration |
+| `OrbzVoiceEnginePort` | Contract for implementer-provided speech output |
+| `OrbzIntelligencePort` | Contract for optional non-deterministic responses |
+| `WebSpeechAdapterOptions` | Locale, voice preference, rate, pitch, volume, and voice-loading options |
+| `OpenAISpeechAdapterOptions` | Secure endpoint and OpenAI speech model, voice, instructions, and format options |
+
+## Speech adapters
+
+| Export | Purpose |
+| --- | --- |
+| `WebSpeechAdapter` | Browser speech synthesis with explicit English locale and voice selection |
+| `OpenAISpeechAdapter` | OpenAI-quality speech through an implementer-owned secure endpoint |
+
+`OpenAISpeechAdapter` defaults to `gpt-4o-mini-tts`, `marin`, and MP3. The
+OpenAI API key stays on the endpoint and is never included in browser code.
+
+## Validators and normalizers
+
+| Export | Purpose |
+| --- | --- |
+| `isOrbzState()` | Type guard for a supported state |
+| `isOrbzPresetName()` | Type guard for a preset name |
+| `isOrbzReducedMotion()` | Type guard for a reduced-motion value |
+| `normalizeOrbzState()` | Unsupported input becomes `idle` |
+| `normalizeOrbzPreset()` | Unsupported input becomes `neongate` |
+| `normalizeOrbzReducedMotion()` | Unsupported input becomes `system` |
+| `normalizeOrbzSize()` | Numbers become pixels; invalid numeric or empty input becomes `16rem` |
+| `normalizeOrbzSpeed()` | Non-positive or non-finite input becomes `1` |
+| `mergeOrbzColors()` | Merge valid, non-empty overrides over a base color set |
+
+Normalize untrusted configuration before storing it:
+
+```ts
+import {
+  normalizeOrbzPreset,
+  normalizeOrbzSpeed,
+  normalizeOrbzState,
+} from "@neongate-ai/orbz";
+
+const config = {
+  preset: normalizeOrbzPreset(payload.preset),
+  speed: normalizeOrbzSpeed(payload.speed),
+  state: normalizeOrbzState(payload.state),
+};
+```
+
+## Registration helpers
+
+`defineOrbz()` is the normal explicit-registration API. It is SSR-safe and
+idempotent:
+
+```ts
+import { defineOrbz } from "@neongate-ai/orbz";
+
+const constructor = defineOrbz();
+```
+
+`orbzElementClassFactory()` creates and caches the class only when
+`globalThis.HTMLElement` exists. It is exported for advanced integrations;
+most applications should call `defineOrbz()` instead.
+
+```ts
+import { orbzElementClassFactory } from '@neongate-ai/orbz'
+
+const constructor = orbzElementClassFactory()
+// undefined on a server; an OrbzElementConstructor in a browser
+```
+
+Both helpers avoid evaluating an `HTMLElement` subclass when the DOM is not
+available.
+
+- [Package on npm](https://www.npmjs.com/package/@neongate-ai/orbz)
+- [Source on GitHub](https://github.com/NeonGate-AI/orbz)

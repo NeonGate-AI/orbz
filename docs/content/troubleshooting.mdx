@@ -1,0 +1,170 @@
+---
+title: Troubleshooting
+description: Diagnose registration, SSR, framework binding, appearance, and motion issues.
+---
+
+# Troubleshooting
+
+## The tag renders, but no orb appears
+
+The browser has probably not registered the custom element. Import the browser
+entry from client code:
+
+```ts
+import "@neongate-ai/orbz/browser";
+```
+
+Then inspect the registry:
+
+```ts
+console.log(customElements.get("orb-z"));
+```
+
+In React or Next.js, import `@neongate-ai/orbz/browser` from client code and
+render the literal `<orb-z>` tag. Do not import package source files.
+
+## The server says `HTMLElement` or `customElements` is undefined
+
+Use a documented package entry point rather than evaluating browser-only
+application code on the server. Orbz's root and browser entries guard registration, but your own code must not
+call DOM globals during server render.
+
+Move DOM queries into the client bootstrap, an effect, or another framework
+mount hook. See [SSR and hydration](/guides/ssr).
+
+## TypeScript does not recognize `<orb-z>` in React
+
+Add the tag to `React.JSX.IntrinsicElements` as shown in the
+[React and Next.js guide](/getting-started/react-next). Do not solve this by
+creating a wrapper component; the runtime element remains `<orb-z>`.
+
+## Preset and custom colors conflict
+
+Choose one appearance mode. Use `preset`, or remove it and write the native
+`color-*` attributes. When both are present, the preset wins and Orbz logs the
+conflicting attributes.
+
+## `palette` has no effect
+
+`palette` is not a public attribute or property. Use `preset`:
+
+```html
+<orb-z preset="magenta"></orb-z>
+```
+
+Available names are `neongate`, `periwinkle`, `magenta`, `peach`, `mocha`, and
+`ivory`.
+
+## A custom color does not appear
+
+Remove the `preset` attribute before entering custom mode:
+
+```ts
+orb.removeAttribute("preset");
+orb.setAttribute("color-primary", "#7C3AED");
+```
+
+Also verify that the value is a valid CSS color and that the attribute is one
+of the five supported names: `color-primary`, `color-secondary`,
+`color-accent`, `color-highlight`, or `color-background`.
+
+## `paused="false"` or `elevated="false"` is still enabled
+
+These are HTML boolean attributes. Presence means true regardless of the
+string value. Remove the attribute:
+
+```ts
+orb.removeAttribute("paused");
+orb.removeAttribute("elevated");
+```
+
+Or use the matching properties:
+
+```ts
+orb.paused = false;
+orb.elevated = false;
+```
+
+In template frameworks, bind `null` or `undefined` when the attribute should be
+absent.
+
+## Motion is not playing
+
+Check these controls in order:
+
+1. Remove `paused` or set the `paused` property to `false`.
+2. Inspect `reduced-motion`. `always` uses a static profile.
+3. With `system`, check the operating-system reduced-motion preference.
+4. Confirm `speed` is positive.
+5. Confirm the element is connected and registered.
+
+`restart()` rebuilds the current state's animation, but it does not override a
+paused or reduced-motion policy.
+
+## The orb has the wrong state, speed, or preset
+
+Unsupported runtime values normalize to safe defaults:
+
+| Control | Default |
+| --- | --- |
+| `state` | `idle` |
+| `speed` | `1` |
+| `preset` | `neongate` |
+| `reduced-motion` | `system` |
+| `size` | `16rem` for an empty value or invalid numeric property |
+
+Use the exported TypeScript types and constants to catch unsupported values
+before runtime.
+
+## Vue warns that `orb-z` cannot be resolved
+
+Configure Vue's template compiler to treat the tag as a custom element:
+
+```ts
+vue({
+  template: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag === "orb-z",
+    },
+  },
+})
+```
+
+Import `@neongate-ai/orbz/browser` from the Vue client entry as well.
+
+## Angular says `orb-z` is not a known element
+
+Add `CUSTOM_ELEMENTS_SCHEMA` to the standalone component or NgModule that owns
+the template:
+
+```ts
+schemas: [CUSTOM_ELEMENTS_SCHEMA]
+```
+
+Then import the browser entry before bootstrapping the application.
+
+## Two microfrontends load different Orbz versions
+
+The Custom Elements registry permits one definition per tag name. Orbz guards
+duplicate registration, so the first `orb-z` implementation registered on the
+page wins. Coordinate one exact version across remotes or let the shell own
+registration. See [Orbz in microfrontends](/guides/microfrontends).
+
+## I cannot inspect or style the Shadow DOM
+
+The shadow root is closed by design. Public CSS variables, parts, internal
+classes, and layer references are not supported. Use the strict documented
+attributes. If the public appearance controls cannot express a valid shared
+use case, open a focused proposal in [GitHub Issues](https://github.com/NeonGate-AI/orbz/issues).
+
+## Still stuck?
+
+When opening an issue, include:
+
+- Orbz version and package entry point
+- framework and framework version
+- browser and operating system
+- the smallest `<orb-z>` markup that reproduces the problem
+- relevant build or console output
+
+[Open an Orbz issue](https://github.com/NeonGate-AI/orbz/issues) · [View the npm package](https://www.npmjs.com/package/@neongate-ai/orbz)

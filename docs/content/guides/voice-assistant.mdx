@@ -1,0 +1,161 @@
+---
+title: Voice and talk runtime
+description: Use automatic first-render speech, English browser voices, OpenAI speech, runtime memory, and custom talk flows.
+---
+
+# Voice and talk runtime
+
+Orbz schedules its talk flow after the element's first connected render. The
+built-in flow is deterministic and keeps captured values only in the element's
+runtime memory:
+
+1. Ana introduces herself.
+2. Ana asks for the visitor's name.
+3. The host passes the answer to `receive()`.
+4. Ana uses that name in the next phrase.
+5. A response step uses an intelligence provider when configured, or a local
+   fallback otherwise.
+
+`startTalking()` resets the runtime context. Orbz does not persist the
+conversation in cookies, local storage, IndexedDB, or a backend.
+
+## Built-in talk data
+
+```ts
+import { DEFAULT_TALK_FLOW, talk } from "@neongate-ai/orbz";
+
+console.log(talk.welcoming.text);
+console.log(talk.askName.capture);
+console.log(DEFAULT_TALK_FLOW);
+```
+
+## Continue the flow
+
+```ts
+import "@neongate-ai/orbz/browser";
+import type { OrbzElement } from "@neongate-ai/orbz";
+
+const orb = document.querySelector<OrbzElement>("orb-z");
+
+await orb?.receive("Jonatas");
+console.log(orb?.talkContext.fullName);
+```
+
+## English browser speech
+
+The zero-configuration engine is `WebSpeechAdapter`. It now:
+
+- requests `en-US` explicitly;
+- waits for the browser's asynchronous voice list;
+- selects an English voice instead of accepting a Portuguese default;
+- prefers higher-quality Google, Microsoft, natural, neural, or configured
+  voices when the browser exposes them.
+
+```ts
+import {
+  WebSpeechAdapter,
+  type OrbzElement
+} from "@neongate-ai/orbz";
+
+const orb = document.createElement("orb-z") as OrbzElement;
+orb.voiceEngine = new WebSpeechAdapter({
+  language: "en-US",
+  preferredVoices: ["Google US English", "Microsoft Aria Online"]
+});
+document.body.append(orb);
+```
+
+The actual installed voices still belong to the visitor's browser and operating
+system. `WebSpeechAdapter` improves selection; it cannot turn a system voice
+into an OpenAI voice.
+
+## OpenAI-quality speech
+
+Use `OpenAISpeechAdapter` for OpenAI text-to-speech quality. Its defaults are
+`gpt-4o-mini-tts`, the `marin` voice, MP3 output, and natural American-English
+instructions.
+
+```ts
+import {
+  OpenAISpeechAdapter,
+  type OrbzElement
+} from "@neongate-ai/orbz";
+
+const orb = document.createElement("orb-z") as OrbzElement;
+orb.voiceEngine = new OpenAISpeechAdapter({
+  endpoint: "/api/orbz/speech"
+});
+document.body.append(orb);
+```
+
+The endpoint is owned by the implementing application. It receives an
+OpenAI-compatible JSON body containing `input`, `instructions`, `model`,
+`response_format`, and `voice`, and returns the generated audio response.
+Keep the OpenAI API key on that server endpoint; never put it in browser code or
+in the npm package.
+
+Applications using generated speech should clearly disclose that the voice is
+AI-generated.
+
+## First-render behavior and browser activation
+
+Orbz attempts speech after the first rendered frame. If the browser rejects
+automatic audio with `NotAllowedError`, Orbz listens for the first pointer,
+keyboard, or touch interaction and retries the talk flow automatically. Reset
+controls should never remount the element merely to unlock speech.
+
+The component dispatches `orbz-talk-error` with the original error, so hosts can
+also show an explicit accessible “Start voice” control.
+
+## Supply a custom flow
+
+```ts
+import {
+  talk,
+  type OrbzElement,
+  type OrbzTalkStep
+} from "@neongate-ai/orbz";
+
+const flow = [
+  talk.welcoming,
+  talk.askName,
+  talk.help
+] as const satisfies readonly OrbzTalkStep[];
+
+const orb = document.createElement("orb-z") as OrbzElement;
+orb.talkFlow = flow;
+document.body.append(orb);
+```
+
+Assign `voiceEngine`, `talkFlow`, and `intelligence` before appending a
+programmatically created element so the first scheduled run uses them.
+
+## Optional intelligence
+
+```ts
+import type {
+  OrbzElement,
+  OrbzIntelligencePort
+} from "@neongate-ai/orbz";
+
+const intelligence: OrbzIntelligencePort = {
+  async respond(input, context) {
+    return productAgent.respond({ context, input });
+  }
+};
+
+orb.intelligence = intelligence;
+```
+
+## Events and visual state
+
+While audio is playing, Orbz temporarily uses the `speaking` visual state and
+then restores the prior state.
+
+| Event | Detail |
+| --- | --- |
+| `orbz-speaking-change` | `{ speaking: boolean }` |
+| `orbz-talk-error` | `{ error: unknown }` |
+
+Orbz does not capture a microphone. The host owns speech recognition, text
+input, permissions, transcripts, product logic, and calls to `receive()`.

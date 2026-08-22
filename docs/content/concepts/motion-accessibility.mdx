@@ -1,0 +1,133 @@
+---
+title: Motion and accessibility
+description: Control speed, pause behavior, reduced motion, and accessible state announcements.
+---
+
+# Motion and accessibility
+
+Orbz has a dedicated motion profile for each state and a static reduced-motion
+presentation for each state. Applications choose the policy; Orbz performs the
+rendering.
+
+## Reduced-motion policy
+
+Use `reduced-motion` to select how Orbz responds:
+
+| Value | Behavior |
+| --- | --- |
+| `system` | Follow `prefers-reduced-motion: reduce` and react when the preference changes |
+| `always` | Always use the static reduced-motion presentation |
+| `never` | Always use the animated presentation |
+
+The default is `system`.
+
+```html
+<orb-z state="idle" reduced-motion="system"></orb-z>
+```
+
+Reduced motion is not a generic idle frame. Every assistant state has a
+distinct static composition, so `listening`, `thinking`, `speaking`, and
+`asleep` remain visually differentiated without continuous animation.
+
+Use `never` only when the product has a clear reason to override the system
+preference. For a user-facing setting, store the user's choice and bind it
+directly:
+
+```ts
+import type { OrbzElement, OrbzReducedMotion } from "@neongate-ai/orbz";
+
+function setMotionPreference(value: OrbzReducedMotion) {
+  const orb = document.querySelector<OrbzElement>("orb-z");
+  if (orb) orb.reducedMotion = value;
+}
+```
+
+## Speed
+
+`speed` scales animation duration. Values greater than `1` move faster; values
+between `0` and `1` move slower. The value must be positive.
+
+```html
+<orb-z speed="0.8"></orb-z>
+<orb-z speed="1.25"></orb-z>
+```
+
+The default is `1`. Zero, negative, non-numeric, and non-finite values
+normalize to the default.
+
+Speed has no visible effect while reduced motion is active because the reduced
+profiles are static.
+
+## Pause and resume
+
+The `paused` boolean attribute freezes the current animation. It does not mute
+audio, stop recording, cancel a request, or change `state`.
+
+```html
+<orb-z state="thinking" paused></orb-z>
+```
+
+```ts
+import type { OrbzElement } from "@neongate-ai/orbz";
+
+const orb = document.querySelector<OrbzElement>("orb-z");
+
+orb?.pause();
+orb?.play();
+orb?.restart();
+```
+
+| Control | Effect |
+| --- | --- |
+| `paused` / `pause()` | Keep the current visual frame |
+| `play()` | Resume the current state's animation |
+| `restart()` | Rebuild the current state's animation from its beginning |
+
+Like `elevated`, `paused` follows HTML boolean semantics. `paused="false"`
+still means paused. Remove the attribute or set the property to `false`.
+
+## Provide meaning outside the animation
+
+The sphere inside Orbz is marked as decorative. State, errors, permission
+requests, and actions need semantic HTML in the host application.
+
+```html
+<section aria-labelledby="assistant-heading">
+  <h2 id="assistant-heading">Voice assistant</h2>
+
+  <div role="status" aria-live="polite">
+    <orb-z state="listening"></orb-z>
+    <span>Assistant is listening</span>
+  </div>
+
+  <button type="button">Stop listening</button>
+</section>
+```
+
+Good surrounding UI should:
+
+- announce meaningful state changes with text, not color or motion alone
+- keep microphone and stop controls keyboard accessible
+- describe errors and recovery actions explicitly
+- preserve useful status when reduced motion is enabled
+- avoid announcing every animation frame or decorative transition
+
+Use `role="status"` and `aria-live` only for messages that genuinely need to be
+announced. If an update is not important to a screen-reader user, ordinary
+visible text may be better.
+
+## A practical default
+
+For most products:
+
+```html
+<orb-z
+  state="idle"
+  speed="1"
+  reduced-motion="system"
+></orb-z>
+```
+
+Then keep an adjacent text label synchronized with the same application state.
+This respects the system preference, preserves the full state vocabulary, and
+does not make motion responsible for meaning.

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A framework-free, interactive Orbz Web Component example."
+    />
+    <title>Orbz · Vanilla example</title>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <a class="brand" href="https://github.com/NeonGate-AI/orbz">
+          <span class="brand-mark" aria-hidden="true"></span>
+          orbz
+        </a>
+        <span class="framework-badge">Vanilla Example</span>
+      </header>
+
+      <section class="playground" aria-labelledby="playground-title">
+        <div class="stage">
+          <div class="stage-copy">
+            <h1 id="playground-title">One voice component. Every framework.</h1>
+            <p class="lede">
+              One <code>&lt;orb-z&gt;</code>, controlled directly from a standalone
+              web-component.
+            </p>
+          </div>
+
+          <div class="orb-frame">
+            <div class="orb-glow" aria-hidden="true"></div>
+            <orb-z
+              id="orb"
+              state="idle"
+              size="300px"
+              speed="1"
+              reduced-motion="system"
+              preset="neongate"
+              aria-label="Assistant is idle"
+            ></orb-z>
+          </div>
+
+          <div class="now-playing" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="status-text">Assistant is idle</span>
+            <span class="status-meta" id="status-meta">300 px · 1.00×</span>
+          </div>
+        </div>
+
+        <aside class="controls" aria-label="Orbz controls">
+          <div class="controls-heading">
+            <div>
+              <p class="eyebrow">Live controls</p>
+              <h2>Tune the behavior</h2>
+            </div>
+            <button class="icon-button" id="reset" type="button">Speak</button>
+          </div>
+
+          <fieldset class="control-group">
+            <legend>State</legend>
+            <div class="segmented" id="state-controls">
+              <button type="button" data-state="idle" aria-pressed="true">Idle</button>
+              <button type="button" data-state="listening" aria-pressed="false">Listening</button>
+              <button type="button" data-state="thinking" aria-pressed="false">Thinking</button>
+              <button type="button" data-state="speaking" aria-pressed="false">Speaking</button>
+              <button type="button" data-state="asleep" aria-pressed="false">Asleep</button>
+            </div>
+          </fieldset>
+
+          <div class="range-grid">
+            <label class="control-group" for="size">
+              <span class="label-row">
+                <span>Orb size</span>
+                <output id="size-output" for="size">300 px</output>
+              </span>
+              <input id="size" type="range" min="160" max="420" value="300" step="4" />
+            </label>
+
+            <label class="control-group" for="speed">
+              <span class="label-row">
+                <span>Motion speed</span>
+                <output id="speed-output" for="speed">1.00×</output>
+              </span>
+              <input id="speed" type="range" min="0.25" max="2.5" value="1" step="0.05" />
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div>
+              <strong>Pause motion</strong>
+              <span>Keep the current visual state</span>
+            </div>
+            <button
+              class="switch"
+              id="pause"
+              type="button"
+              role="switch"
+              aria-checked="false"
+              aria-label="Pause motion"
+            ><span></span></button>
+          </div>
+
+          <div class="switch-row">
+            <div>
+              <strong>Elevated</strong>
+              <span>Add a subtle, centered shadow</span>
+            </div>
+            <button
+              class="switch"
+              id="elevated"
+              type="button"
+              role="switch"
+              aria-checked="false"
+              aria-label="Elevated"
+            ><span></span></button>
+          </div>
+
+          <label class="select-control" for="reduced-motion">
+            <span>
+              <strong>Reduced motion</strong>
+              <small>Respect accessibility preferences</small>
+            </span>
+            <select id="reduced-motion">
+              <option value="system">System</option>
+              <option value="always">Always</option>
+              <option value="never">Never</option>
+            </select>
+          </label>
+
+          <fieldset class="control-group preset-group">
+            <legend>Preset</legend>
+            <div class="preset-options" aria-label="Color presets">
+              <button type="button" data-preset="neongate" aria-pressed="true">NeonGate</button>
+              <button type="button" data-preset="periwinkle" aria-pressed="false">Periwinkle</button>
+              <button type="button" data-preset="magenta" aria-pressed="false">Magenta</button>
+              <button type="button" data-preset="peach" aria-pressed="false">Peach</button>
+              <button type="button" data-preset="mocha" aria-pressed="false">Mocha</button>
+              <button type="button" data-preset="ivory" aria-pressed="false">Ivory</button>
+            </div>
+          </fieldset>
+
+          <fieldset class="control-group custom-palette">
+            <legend>Custom palette</legend>
+            <div class="color-grid">
+              <label><input id="primary" type="color" value="#6c5cff" aria-label="Primary color" /><span>Primary</span></label>
+              <label><input id="secondary" type="color" value="#00e9ff" aria-label="Secondary color" /><span>Secondary</span></label>
+              <label><input id="accent" type="color" value="#ff4dde" aria-label="Accent color" /><span>Accent</span></label>
+              <label><input id="highlight" type="color" value="#ffb07a" aria-label="Highlight color" /><span>Highlight</span></label>
+              <label><input id="background" type="color" value="#14142b" aria-label="Core color" /><span>Core</span></label>
+            </div>
+          </fieldset>
+        </aside>
+      </section>
+
+      <footer>Framework-native controls · Shadow DOM isolation · No adapter required</footer>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

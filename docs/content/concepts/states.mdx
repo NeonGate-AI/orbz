@@ -1,0 +1,120 @@
+---
+title: Assistant states
+description: Map application events to Orbz's five visual states.
+---
+
+# Assistant states
+
+The `state` attribute selects one of five motion profiles. A state communicates
+visual intent; it does not start a microphone, call a model, or play audio.
+
+| State | Visual intent | Typical application signal |
+| --- | --- | --- |
+| `idle` | Calm, available presence | Ready for the next interaction |
+| `listening` | Alert and receptive | Input capture is active |
+| `thinking` | Focused processing | A request or tool chain is in progress |
+| `speaking` | Energetic, voice-like movement | Synthesized or streamed audio is playing |
+| `asleep` | Quiet, dimmed rest | The assistant is unavailable or intentionally dormant |
+
+## Set a state
+
+Use an HTML attribute:
+
+```html
+<orb-z state="listening"></orb-z>
+```
+
+Or update the matching property:
+
+```ts
+import "@neongate-ai/orbz/browser";
+import type { OrbzElement } from "@neongate-ai/orbz";
+
+const orb = document.querySelector<OrbzElement>("orb-z");
+
+if (orb) {
+  orb.state = "thinking";
+}
+```
+
+React and Next.js render the same native tag after importing the browser entry:
+
+```tsx
+import "@neongate-ai/orbz/browser";
+import type { OrbzState } from "@neongate-ai/orbz";
+
+export function AssistantPresence({ state }: { state: OrbzState }) {
+  return <orb-z state={state} />;
+}
+```
+
+Changing `state` replaces the current animation with the new state's profile.
+If `paused` is present, Orbz renders the new state and keeps its animation
+paused.
+
+## Keep domain state outside Orbz
+
+Real assistants usually have more states than a visual orb needs: requesting
+permission, reconnecting, waiting for a tool, recovering from an error, or
+being interrupted. Keep those domain states in your application and map them
+to the nearest visual intent.
+
+```ts
+type SessionPhase =
+  | "booting"
+  | "ready"
+  | "capturing"
+  | "transcribing"
+  | "requesting"
+  | "playing"
+  | "offline"
+  | "failed";
+
+const visualState = {
+  booting: "idle",
+  ready: "idle",
+  capturing: "listening",
+  transcribing: "thinking",
+  requesting: "thinking",
+  playing: "speaking",
+  offline: "asleep",
+  failed: "idle",
+} as const;
+```
+
+Error details should appear in real text or controls. Changing the orb's color
+or motion alone is not enough to explain a failure.
+
+## Invalid and missing values
+
+The default state is `idle`. Removing `state`, or assigning an unsupported
+value through untyped runtime code, normalizes the element back to `idle`.
+TypeScript consumers can import `OrbzState` or the `ORBZ_STATES` constant to
+avoid unsupported values.
+
+```ts
+import { ORBZ_STATES, type OrbzState } from "@neongate-ai/orbz";
+
+function setState(state: OrbzState) {
+  // state is one of the five documented values
+}
+
+for (const state of ORBZ_STATES) {
+  console.log(state);
+}
+```
+
+## State must also be perceivable
+
+Motion is presentation, not an announcement. Pair the orb with visible status
+text and a live region when state changes matter to the user:
+
+```html
+<div role="status" aria-live="polite">
+  <orb-z state="thinking"></orb-z>
+  <span>Assistant is thinking</span>
+</div>
+```
+
+This pattern remains meaningful when animation is reduced, paused, unsupported,
+or not visible. Continue with [Motion and accessibility](/concepts/motion-accessibility).
