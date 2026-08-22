@@ -48,9 +48,10 @@
     "svelte": "pnpm --filter @orbz/example-svelte preview",
     "angular": "pnpm --filter @orbz/example-angular preview",
     "next": "pnpm --filter @orbz/example-next start",
-    "docs": "pnpm docs:build && pnpm docs:start",
+    "docs:dev": "pnpm docs:prepare && pnpm docs:dev",
+    "docs:start": "pnpm docs:prepare && pnpm --filter @orbz/docs start",
     "docs:build": "pnpm --filter @orbz/docs build",
-    "docs:start": "pnpm --filter @orbz/docs start",
+    "docs:prepare": "pnpm build && pnpm docs:build",
     "prepack": "pnpm typecheck && pnpm build"
   },
   "devDependencies": {
