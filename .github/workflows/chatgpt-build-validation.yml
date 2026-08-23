@@ -34,17 +34,15 @@ jobs:
           }
           fs.writeFileSync('package.json', JSON.stringify(root, null, 2) + '\n')
 
-          const configPath = 'tsdown.config.ts'
-          let config = fs.readFileSync(configPath, 'utf8')
+          let config = fs.readFileSync('tsdown.config.ts', 'utf8')
           config = config.replace("  entry: {", "  deps: {\n    neverBundle: ['react']\n  },\n  entry: {")
           config = config.replace(
             "    orbz: 'src/index.ts'",
             "    orbz: 'src/index.ts',\n    'react-types': 'src/react.types.ts'"
           )
-          fs.writeFileSync(configPath, config)
+          fs.writeFileSync('tsdown.config.ts', config)
 
-          const exampleNames = ['angular', 'next', 'react', 'svelte', 'vanilla', 'vue']
-          for (const name of exampleNames) {
+          for (const name of ['angular', 'next', 'react', 'svelte', 'vanilla', 'vue']) {
             const file = `examples/${name}/package.json`
             const pkg = JSON.parse(fs.readFileSync(file, 'utf8'))
             pkg.dependencies['@neongate-ai/orbz-example-styles'] = 'workspace:*'
@@ -54,7 +52,6 @@ jobs:
 
           cat > src/react.types.ts <<'TS'
           import type { DetailedHTMLProps, HTMLAttributes } from 'react'
-
           import type {
             OrbzPresetName,
             OrbzReducedMotion,
@@ -81,8 +78,7 @@ jobs:
           export type OrbzReactIntrinsicProps = DetailedHTMLProps<
             HTMLAttributes<OrbzElement>,
             OrbzElement
-          > &
-            OrbzReactAttributes
+          > & OrbzReactAttributes
 
           declare module 'react' {
             namespace JSX {
@@ -112,17 +108,27 @@ jobs:
           python3 <<'PY'
           from pathlib import Path
 
-          root = Path('examples')
-          for file in root.rglob('*'):
-              if not file.is_file() or file.suffix not in {'.ts', '.tsx', '.js', '.mjs', '.vue', '.svelte', '.json'}:
-                  continue
+          style_import_files = [
+              Path('examples/vanilla/src/main.ts'),
+              Path('examples/react/src/main.tsx'),
+              Path('examples/vue/src/main.ts'),
+              Path('examples/svelte/src/main.ts'),
+              Path('examples/next/src/app/layout.tsx'),
+          ]
+          for file in style_import_files:
               text = file.read_text()
               text = text.replace('"./styles.css"', '"@neongate-ai/orbz-example-styles/styles.css"')
               text = text.replace("'./styles.css'", "'@neongate-ai/orbz-example-styles/styles.css'")
-              text = text.replace('"src/styles.css"', '"node_modules/@neongate-ai/orbz-example-styles/styles.css"')
               file.write_text(text)
 
-          for file in root.glob('*/src/styles.css'):
+          angular = Path('examples/angular/angular.json')
+          text = angular.read_text().replace(
+              '"src/styles.css"',
+              '"node_modules/@neongate-ai/orbz-example-styles/styles.css"'
+          )
+          angular.write_text(text)
+
+          for file in Path('examples').glob('*/src/styles.css'):
               file.unlink()
 
           for path in [
@@ -137,9 +143,8 @@ jobs:
               Path('examples/next/src/app/orb-playground.tsx'),
           ]:
               text = path.read_text()
-              marker = 'import "@neongate-ai/orbz/react-types";\n'
               if '@neongate-ai/orbz/react-types' not in text:
-                  path.write_text(marker + text)
+                  path.write_text('import "@neongate-ai/orbz/react-types";\n' + text)
 
           docs_register = Path('docs/app/register-element.client.tsx')
           text = docs_register.read_text()
@@ -149,15 +154,6 @@ jobs:
                   'import "@neongate-ai/orbz/react-types";\nimport "@neongate-ai/orbz/browser";'
               )
               docs_register.write_text(text)
-          PY
-
-          python3 <<'PY'
-          from pathlib import Path
-          p = Path('pnpm-workspace.yaml')
-          text = p.read_text()
-          if '  - "examples/styles"' not in text:
-              text = text.replace('  - "examples/*"', '  - "examples/*"\n  - "examples/styles"')
-          p.write_text(text)
           PY
 
       - name: Clean outputs and dependencies
