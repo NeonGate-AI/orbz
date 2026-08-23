@@ -138,13 +138,20 @@ jobs:
               if path.exists():
                   path.unlink()
 
-          for path in [
-              Path('examples/react/src/App.tsx'),
-              Path('examples/next/src/app/orb-playground.tsx'),
-          ]:
-              text = path.read_text()
-              if '@neongate-ai/orbz/react-types' not in text:
-                  path.write_text('import "@neongate-ai/orbz/react-types";\n' + text)
+          react = Path('examples/react/src/App.tsx')
+          text = react.read_text()
+          if '@neongate-ai/orbz/react-types' not in text:
+              react.write_text('import "@neongate-ai/orbz/react-types";\n' + text)
+
+          next_file = Path('examples/next/src/app/orb-playground.tsx')
+          text = next_file.read_text()
+          if '@neongate-ai/orbz/react-types' not in text:
+              text = text.replace(
+                  '"use client";\n',
+                  '"use client";\n\nimport "@neongate-ai/orbz/react-types";\n',
+                  1,
+              )
+              next_file.write_text(text)
 
           docs_register = Path('docs/app/register-element.client.tsx')
           text = docs_register.read_text()
