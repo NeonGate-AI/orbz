@@ -36,6 +36,7 @@ jobs:
 
           const configPath = 'tsdown.config.ts'
           let config = fs.readFileSync(configPath, 'utf8')
+          config = config.replace("  entry: {", "  external: ['react'],\n  entry: {")
           config = config.replace(
             "    orbz: 'src/index.ts'",
             "    orbz: 'src/index.ts',\n    'react-types': 'src/react.types.ts'"
