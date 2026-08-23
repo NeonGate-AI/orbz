@@ -1,0 +1,89 @@
+name: ChatGPT Build Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@10.32.1 --activate
+
+      - name: Extract validation repositories
+        run: |
+          mkdir validation
+          tar -xJf .chatgpt/orbz-validation.tar.xz -C validation
+
+      - name: Clean generated outputs
+        working-directory: validation
+        run: |
+          find . -type d \( -name node_modules -o -name dist -o -name .next -o -name .angular -o -name .svelte-kit -o -name coverage -o -name .turbo \) -prune -exec rm -rf {} + || true
+          rm -rf docs/public/_pagefind
+
+      - name: Install Orbz
+        working-directory: validation/orbz
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Orbz
+        working-directory: validation/orbz
+        run: |
+          pnpm build
+          pnpm typecheck
+          npm pack --ignore-scripts
+          test -f dist/react-types.js
+          test -f dist/react-types.d.ts
+
+      - name: Wire local Orbz tarball into consumers
+        working-directory: validation
+        shell: bash
+        run: |
+          TGZ=$(find orbz -maxdepth 1 -name 'neongate-ai-orbz-*.tgz' -print -quit)
+          test -n "$TGZ"
+          ABS_TGZ="$PWD/$TGZ"
+          node - "$ABS_TGZ" <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const tgz = process.argv[2];
+          const files = [
+            'docs/package.json',
+            'orbz-examples/angular/package.json',
+            'orbz-examples/next/package.json',
+            'orbz-examples/react/package.json',
+            'orbz-examples/svelte/package.json',
+            'orbz-examples/vanilla/package.json',
+            'orbz-examples/vue/package.json'
+          ];
+          for (const file of files) {
+            const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+            data.dependencies['@neongate-ai/orbz'] = `file:${tgz}`;
+            fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
+          }
+          NODE
+
+      - name: Install Docs
+        working-directory: validation/docs
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Docs
+        working-directory: validation/docs
+        run: |
+          pnpm typecheck
+          pnpm build
+
+      - name: Install Examples
+        working-directory: validation/orbz-examples
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Examples
+        working-directory: validation/orbz-examples
+        run: |
+          pnpm check:parity
+          pnpm build
