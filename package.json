@@ -1,6 +1,6 @@
 {
   "name": "@neongate-ai/orbz",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A framework-agnostic, customizable AI voice orb built as a strict, SSR-safe web component.",
   "type": "module",
   "license": "MIT",
@@ -40,20 +40,14 @@
   ],
   "scripts": {
     "build": "tsdown && tsdown --config tsdown.standalone.config.ts",
-    "typecheck": "tsc --noEmit",
-    "examples": "pnpm build && pnpm --filter \"@orbz/example-*\" build",
-    "vanilla": "pnpm --filter @orbz/example-vanilla preview",
-    "react": "pnpm --filter @orbz/example-react preview",
-    "vue": "pnpm --filter @orbz/example-vue preview",
-    "svelte": "pnpm --filter @orbz/example-svelte preview",
-    "angular": "pnpm --filter @orbz/example-angular preview",
-    "next": "pnpm --filter @orbz/example-next start",
-    "docs:dev": "pnpm docs:build && pnpm --filter @orbz/docs dev",
-    "docs:start": "pnpm docs:build && pnpm --filter @orbz/docs start",
-    "docs:build": "pnpm build && pnpm --filter @orbz/docs build",
-    "prepack": "pnpm typecheck && pnpm build"
+    "check": "biome lint . && tsc --noEmit && pnpm build",
+    "neon": "neon",
+    "prepack": "pnpm check"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.11",
+    "@neongate-ai/neon": "0.1.0",
+    "@types/react": "19.2.18",
     "tsdown": "0.22.14",
     "typescript": "5.9.3"
   },
@@ -68,6 +62,11 @@
       "import": "./dist/browser.js",
       "default": "./dist/browser.js"
     },
+    "./react-types": {
+      "types": "./dist/react-types.d.ts",
+      "import": "./dist/react-types.js",
+      "default": "./dist/react-types.js"
+    },
     "./standalone": {
       "types": "./dist/browser.d.ts",
       "import": "./dist/standalone/orbz.js",
@@ -80,5 +79,8 @@
     "./dist/browser.js",
     "./dist/index.css",
     "./dist/standalone/orbz.js"
-  ]
+  ],
+  "engines": {
+    "node": "24.x"
+  }
 }

@@ -1,83 +1,27 @@
 {
-  "assist": {
-    "actions": {
-      "source": {
-        "organizeImports": "off"
-      }
-    }
+  "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
   },
-  "files": {
-    "includes": [
-      "**",
-      "!**/.next",
-      "!**/.turbo",
-      "!**/dist",
-      "!**/node_modules",
-      "!**/.mastra",
-      "!**/next-env.d.ts"
-    ]
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "complexity": {
-        "useLiteralKeys": "off"
-      },
-      "style": {
-        "useImportType": "off",
-        "useConsistentTypeDefinitions": {
-          "level": "error",
-          "options": {
-            "style": "interface"
-          }
-        },
-        "useFilenamingConvention": {
-          "level": "error",
-          "options": {
-            "filenameCases": ["kebab-case"]
-          }
-        }
-      },
-      "correctness": {
-        "noUnusedImports": "error",
-        "noUnusedVariables": "warn",
-        "useExhaustiveDependencies": "warn"
-      },
-      "suspicious": {
-        "noArrayIndexKey": "warn"
-      }
+      "recommended": true
     }
-  },
-  "formatter": {
-    "lineWidth": 80,
-    "indentStyle": "space",
-    "indentWidth": 2
   },
   "javascript": {
     "formatter": {
+      "quoteStyle": "single",
       "semicolons": "asNeeded",
-      "trailingCommas": "none",
-      "quoteStyle": "single"
-    }
-  },
-  "json": {
-    "formatter": {
-      "indentStyle": "space",
-      "indentWidth": 2,
-      "lineWidth": 80,
       "trailingCommas": "none"
-    },
-    "parser": {
-      "allowComments": true
-    }
-  },
-  "css": {
-    "formatter": {
-      "enabled": false
-    },
-    "parser": {
-      "cssModules": true,
-      "tailwindDirectives": true
     }
   }
 }

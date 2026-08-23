@@ -12,9 +12,13 @@ export default defineConfig({
   dts: {
     sourcemap: false
   },
+  deps: {
+    neverBundle: ['react']
+  },
   entry: {
     browser: 'src/browser.client.ts',
-    orbz: 'src/index.ts'
+    orbz: 'src/index.ts',
+    'react-types': 'src/react.types.ts'
   },
   failOnWarn: true,
   fixedExtension: false,

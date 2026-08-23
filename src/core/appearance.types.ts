@@ -1,4 +1,4 @@
-import {
+import type {
   ORBZ_PRESET_NAMES,
   ORBZ_REDUCED_MOTION_MODES,
   ORBZ_STATES

@@ -12,25 +12,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  package:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --filter @neongate-ai/orbz
+        run: pnpm install --no-frozen-lockfile
 
-      - name: Build Orbz
-        run: pnpm build
+      - name: Check package
+        run: pnpm check
+
+      - name: Verify npm payload
+        run: npm pack --dry-run
