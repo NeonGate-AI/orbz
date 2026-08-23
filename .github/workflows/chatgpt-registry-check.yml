@@ -1,0 +1,15 @@
+name: ChatGPT Registry Check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+      - name: Show published Orbz versions
+        run: npm view @neongate-ai/orbz versions --json
