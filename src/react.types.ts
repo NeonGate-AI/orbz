@@ -1,11 +1,6 @@
 import type { DetailedHTMLProps, HTMLAttributes } from 'react'
 
-import type {
-  OrbzPresetName,
-  OrbzReducedMotion,
-  OrbzSize,
-  OrbzState
-} from '@core/appearance.types'
+import type { OrbzPresetName, OrbzReducedMotion, OrbzSize, OrbzState } from '@core/appearance.types'
 import type { OrbzElement } from '@element/element.types'
 
 export interface OrbzReactAttributes {
@@ -14,6 +9,8 @@ export interface OrbzReactAttributes {
   'color-highlight'?: string
   'color-primary'?: string
   'color-secondary'?: string
+  /** Use Orbz presets/properties and an outer element for layout styling. */
+  className?: never
   elevated?: boolean | string
   paused?: boolean | string
   preset?: OrbzPresetName
@@ -23,11 +20,12 @@ export interface OrbzReactAttributes {
   state?: OrbzState
 }
 
-export type OrbzReactIntrinsicProps = DetailedHTMLProps<
-  HTMLAttributes<OrbzElement>,
-  OrbzElement
-> &
-  OrbzReactAttributes
+type OrbzReactHostProps = Omit<
+  DetailedHTMLProps<HTMLAttributes<OrbzElement>, OrbzElement>,
+  'className'
+>
+
+export type OrbzReactIntrinsicProps = OrbzReactHostProps & OrbzReactAttributes
 
 declare module 'react' {
   namespace JSX {

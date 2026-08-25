@@ -1,7 +1,4 @@
-import {
-  ORBZ_MOTION_BY_STATE,
-  REDUCED_ORBZ_MOTION_BY_STATE
-} from '@core/motion.data'
+import { ORBZ_MOTION_BY_STATE, REDUCED_ORBZ_MOTION_BY_STATE } from '@core/motion.data'
 import type {
   OrbzAnimationScalar,
   OrbzAnimationSeries,
@@ -9,23 +6,20 @@ import type {
   OrbzLayerMotion,
   OrbzTransition
 } from '@core/motion.types'
-import type {
-  OrbzAnimationLayers,
-  OrbzAnimationSettings
-} from '@element/element.types'
+import type { OrbzAnimationLayers, OrbzAnimationSettings } from '@element/element.types'
 
 const ANIMATED_STYLE_PROPERTIES = [
   '--orbz-angle',
   'opacity',
   'rotate',
   'scale',
-  'translate',
+  'translate'
 ] as const
 
 const EASINGS = {
   easeInOut: 'ease-in-out',
   easeOut: 'ease-out',
-  linear: 'linear',
+  linear: 'linear'
 } as const
 
 let anglePropertyRegistration: boolean | undefined
@@ -52,7 +46,7 @@ function registerOrbzAngleProperty(): boolean {
       inherits: true,
       initialValue: '0deg',
       name: '--orbz-angle',
-      syntax: '<angle>',
+      syntax: '<angle>'
     })
     anglePropertyRegistration = true
   } catch (error) {
@@ -71,7 +65,6 @@ export class OrbzAnimationService {
   readonly #animations: Animation[] = []
   readonly #layers: OrbzAnimationLayers
   readonly #styleTarget: HTMLElement
-  #settings: OrbzAnimationSettings | undefined
 
   constructor(styleTarget: HTMLElement, layers: OrbzAnimationLayers) {
     this.#styleTarget = styleTarget
@@ -80,31 +73,20 @@ export class OrbzAnimationService {
 
   render(settings: OrbzAnimationSettings): void {
     this.cancel()
-    this.#settings = { ...settings }
 
     const profile = settings.reduced
       ? REDUCED_ORBZ_MOTION_BY_STATE[settings.state]
       : ORBZ_MOTION_BY_STATE[settings.state]
 
-    this.#styleTarget.style.setProperty(
-      '--orbz-contrast',
-      String(profile.contrast),
-    )
-    this.#styleTarget.style.setProperty(
-      '--orbz-saturation',
-      String(profile.saturation),
-    )
+    this.#styleTarget.style.setProperty('--orbz-contrast', String(profile.contrast))
+    this.#styleTarget.style.setProperty('--orbz-saturation', String(profile.saturation))
 
     this.#animateLayer(this.#layers.root, profile.root, settings.speed)
     this.#animateLayer(this.#layers.aura, profile.aura, settings.speed)
     this.#animateLayer(this.#layers.ring, profile.ring, settings.speed)
     this.#animateLayer(this.#layers.field, profile.field, settings.speed)
     this.#animateLayer(this.#layers.core, profile.core, settings.speed)
-    this.#animateLayer(
-      this.#layers.highlight,
-      profile.highlight,
-      settings.speed,
-    )
+    this.#animateLayer(this.#layers.highlight, profile.highlight, settings.speed)
 
     if (settings.paused) {
       this.pause()
@@ -123,12 +105,6 @@ export class OrbzAnimationService {
     }
   }
 
-  restart(): void {
-    if (this.#settings) {
-      this.render(this.#settings)
-    }
-  }
-
   cancel(): void {
     for (const animation of this.#animations) {
       animation.cancel()
@@ -144,14 +120,9 @@ export class OrbzAnimationService {
 
   dispose(): void {
     this.cancel()
-    this.#settings = undefined
   }
 
-  #animateLayer(
-    element: HTMLElement,
-    motion: OrbzLayerMotion,
-    speed: number,
-  ): void {
+  #animateLayer(element: HTMLElement, motion: OrbzLayerMotion, speed: number): void {
     const values = motion.animate
 
     this.#animateProperty(
@@ -160,23 +131,16 @@ export class OrbzAnimationService {
       values.opacity,
       motion.transition,
       speed,
-      serializeNumber,
+      serializeNumber
     )
-    this.#animateProperty(
-      element,
-      'scale',
-      values.scale,
-      motion.transition,
-      speed,
-      serializeNumber,
-    )
+    this.#animateProperty(element, 'scale', values.scale, motion.transition, speed, serializeNumber)
     this.#animateProperty(
       element,
       'rotate',
       values.rotate,
       motion.transition,
       speed,
-      serializeAngle,
+      serializeAngle
     )
     this.#animateTranslate(element, values, motion.transition, speed)
     this.#animateAngle(element, values, motion.transition, speed)
@@ -186,7 +150,7 @@ export class OrbzAnimationService {
     element: HTMLElement,
     values: OrbzAnimationValues,
     transition: OrbzTransition,
-    speed: number,
+    speed: number
   ): void {
     if (values.x === undefined && values.y === undefined) {
       return
@@ -201,21 +165,14 @@ export class OrbzAnimationService {
       return `${serializeDistance(x)} ${serializeDistance(y)}`
     })
 
-    this.#animateProperty(
-      element,
-      'translate',
-      translations,
-      transition,
-      speed,
-      String,
-    )
+    this.#animateProperty(element, 'translate', translations, transition, speed, String)
   }
 
   #animateAngle(
     element: HTMLElement,
     values: OrbzAnimationValues,
     transition: OrbzTransition,
-    speed: number,
+    speed: number
   ): void {
     const angle = values['--orb-angle']
     if (angle === undefined) {
@@ -223,14 +180,7 @@ export class OrbzAnimationService {
     }
 
     if (registerOrbzAngleProperty()) {
-      this.#animateProperty(
-        element,
-        '--orbz-angle',
-        angle,
-        transition,
-        speed,
-        serializeAngle,
-      )
+      this.#animateProperty(element, '--orbz-angle', angle, transition, speed, serializeAngle)
       return
     }
 
@@ -238,14 +188,7 @@ export class OrbzAnimationService {
     // field preserves motion while the first gradient angle remains set.
     const angles = asArray(angle).map(serializeAngle)
     element.style.setProperty('--orbz-angle', angles[0] ?? '0deg')
-    this.#animateProperty(
-      element,
-      'rotate',
-      angles,
-      transition,
-      speed,
-      String,
-    )
+    this.#animateProperty(element, 'rotate', angles, transition, speed, String)
   }
 
   #animateProperty(
@@ -254,26 +197,19 @@ export class OrbzAnimationService {
     series: OrbzAnimationSeries | undefined,
     transition: OrbzTransition,
     speed: number,
-    serialize: (value: OrbzAnimationScalar) => string,
+    serialize: (value: OrbzAnimationScalar) => string
   ): void {
     if (series === undefined) {
       return
     }
 
     const values = asArray(series)
-    if (
-      values.length <= 1 ||
-      transition.duration <= 0 ||
-      typeof element.animate !== 'function'
-    ) {
+    if (values.length <= 1 || transition.duration <= 0 || typeof element.animate !== 'function') {
       element.style.setProperty(property, serialize(values[0] ?? 0))
       return
     }
 
-    const offsets =
-      transition.times?.length === values.length
-        ? transition.times
-        : undefined
+    const offsets = transition.times?.length === values.length ? transition.times : undefined
     const keyframes = values.map((value, index) => {
       const frame = { [property]: serialize(value) } as Keyframe
       if (offsets) {
@@ -293,7 +229,7 @@ export class OrbzAnimationService {
       iterations:
         transition.repeat === Number.POSITIVE_INFINITY
           ? Number.POSITIVE_INFINITY
-          : (transition.repeat ?? 0) + 1,
+          : (transition.repeat ?? 0) + 1
     })
 
     this.#animations.push(animation)
@@ -309,15 +245,13 @@ function asArray(series: OrbzAnimationSeries): readonly OrbzAnimationScalar[] {
 function valueAt(
   values: readonly OrbzAnimationScalar[],
   index: number,
-  targetLength: number,
+  targetLength: number
 ): OrbzAnimationScalar {
   if (values.length <= 1 || targetLength <= 1) {
     return values[0] ?? 0
   }
 
-  const sourceIndex = Math.round(
-    (index * (values.length - 1)) / (targetLength - 1)
-  )
+  const sourceIndex = Math.round((index * (values.length - 1)) / (targetLength - 1))
   return values[sourceIndex] ?? values[values.length - 1] ?? 0
 }
 

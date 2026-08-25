@@ -14,17 +14,12 @@ import {
 } from '@core/config.data'
 import { mergeOrbzColors } from '@core/merge-colors.compute'
 import { normalizeOrbzPreset } from '@core/normalize-preset.compute'
-import {
-  normalizeOrbzReducedMotion
-} from '@core/normalize-reduced-motion.compute'
+import { normalizeOrbzReducedMotion } from '@core/normalize-reduced-motion.compute'
 import { normalizeOrbzSize } from '@core/normalize-size.compute'
 import { normalizeOrbzSpeed } from '@core/normalize-speed.compute'
 import { normalizeOrbzState } from '@core/normalize-state.compute'
 import { ORBZ_OBSERVED_ATTRIBUTES } from '@element/element.data'
-import type {
-  OrbzElement,
-  OrbzElementConstructor
-} from '@element/element.types'
+import type { OrbzElement, OrbzElementConstructor } from '@element/element.types'
 import { orbzShadowTreeFactory } from '@factories/shadow-tree.factory'
 import type { OrbzIntelligencePort } from '@ports/intelligence.port'
 import type { OrbzVoiceEnginePort } from '@ports/voice-engine.port'
@@ -32,7 +27,6 @@ import { OrbzAnimationService } from '@services/animation.service'
 import { OrbzTalkRunnerService } from '@services/talk-runner.service'
 import { DEFAULT_TALK_FLOW } from '@talk/talk.data'
 import type { OrbzTalkContext, OrbzTalkStep } from '@talk/talk.types'
-import { WebSpeechAdapter } from '@talk/web-speech.adapter'
 
 const ELEMENT_CONSTRUCTORS = new WeakMap<object, OrbzElementConstructor>()
 
@@ -58,17 +52,13 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
     readonly #talkRunner: OrbzTalkRunnerService
     readonly #visualRoot: HTMLElement
     #activationAbortController: AbortController | undefined
-    #cancelScheduledTalk: (() => void) | undefined
     #colorConflictCheckQueued = false
     #connected = false
     #hasColorConflict = false
-    #intelligence: OrbzIntelligencePort | undefined
     #motionQuery: MediaQueryList | undefined
     #speaking = false
     #stateBeforeSpeech: OrbzState | undefined
     #talkFlow: readonly OrbzTalkStep[] = DEFAULT_TALK_FLOW
-    #talkStarted = false
-    #voiceEngine: OrbzVoiceEnginePort
 
     readonly #handleMotionPreferenceChange = (): void => {
       if (this.reducedMotion === 'system') {
@@ -83,20 +73,15 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       const shadowTree = orbzShadowTreeFactory(shadowRoot, this.ownerDocument)
 
       this.#visualRoot = shadowTree.root
-      this.#animationService = new OrbzAnimationService(
-        this.#visualRoot,
-        shadowTree.layers
-      )
-      this.#voiceEngine = new WebSpeechAdapter()
+      this.#animationService = new OrbzAnimationService(this.#visualRoot, shadowTree.layers)
       this.#talkRunner = new OrbzTalkRunnerService(
-        this.#voiceEngine,
         this.#handleSpeakingChange.bind(this),
         this.#handleTalkError.bind(this)
       )
     }
 
     get intelligence(): OrbzIntelligencePort | undefined {
-      return this.#intelligence
+      return this.#talkRunner.intelligence
     }
 
     set intelligence(value: OrbzIntelligencePort | undefined) {
@@ -104,7 +89,6 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
         throw new TypeError('Orbz intelligence must implement respond().')
       }
 
-      this.#intelligence = value
       this.#talkRunner.intelligence = value
     }
 
@@ -125,23 +109,21 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       this.#talkFlow = [...flow]
     }
 
-    get voiceEngine(): OrbzVoiceEnginePort {
-      return this.#voiceEngine
+    get voiceEngine(): OrbzVoiceEnginePort | undefined {
+      return this.#talkRunner.voiceEngine
     }
 
     set voiceEngine(value: OrbzVoiceEnginePort | undefined) {
-      const engine = value ?? new WebSpeechAdapter()
       if (
-        typeof engine.speak !== 'function' ||
-        typeof engine.stop !== 'function'
+        value !== undefined &&
+        (typeof value.speak !== 'function' || typeof value.stop !== 'function')
       ) {
-        throw new TypeError(
-          'Orbz voiceEngine must implement speak() and stop().'
-        )
+        throw new TypeError('Orbz voiceEngine must implement speak() and stop().')
       }
 
-      this.#voiceEngine = engine
-      this.#talkRunner.voiceEngine = engine
+      this.#activationAbortController?.abort()
+      this.#activationAbortController = undefined
+      this.#talkRunner.voiceEngine = value
     }
 
     get elevated(): boolean {
@@ -214,8 +196,6 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       this.#connectMotionPreference()
       this.#synchronizePresentationAttributes()
       this.#renderMotion()
-
-      this.#scheduleInitialTalk()
     }
 
     disconnectedCallback(): void {
@@ -224,8 +204,6 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       }
 
       this.#connected = false
-      this.#cancelScheduledTalk?.()
-      this.#cancelScheduledTalk = undefined
       this.#activationAbortController?.abort()
       this.#activationAbortController = undefined
       this.#disconnectMotionPreference()
@@ -233,11 +211,7 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       this.#talkRunner.stop()
     }
 
-    attributeChangedCallback(
-      name: string,
-      oldValue: string | null,
-      newValue: string | null,
-    ): void {
+    attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
       if (oldValue === newValue) {
         return
       }
@@ -341,7 +315,6 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
     startTalking(): Promise<void> {
       this.#activationAbortController?.abort()
       this.#activationAbortController = undefined
-      this.#talkStarted = true
       return this.#talkRunner.start(this.#talkFlow)
     }
 
@@ -349,31 +322,6 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       this.#activationAbortController?.abort()
       this.#activationAbortController = undefined
       this.#talkRunner.stop()
-    }
-
-    #scheduleInitialTalk(): void {
-      this.#cancelScheduledTalk?.()
-
-      const window = this.ownerDocument.defaultView
-      const start = (): void => {
-        this.#cancelScheduledTalk = undefined
-        queueMicrotask(() => {
-          if (!this.#connected || this.#talkStarted) {
-            return
-          }
-
-          void this.startTalking()
-        })
-      }
-
-      if (window) {
-        const frame = window.requestAnimationFrame(start)
-        this.#cancelScheduledTalk = () => window.cancelAnimationFrame(frame)
-        return
-      }
-
-      const timer = globalThis.setTimeout(start)
-      this.#cancelScheduledTalk = () => globalThis.clearTimeout(timer)
     }
 
     #waitForTalkActivation(): void {
@@ -401,21 +349,9 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       } as const
 
       this.#activationAbortController = abortController
-      this.ownerDocument.addEventListener(
-        'keydown',
-        handleActivation,
-        options
-      )
-      this.ownerDocument.addEventListener(
-        'pointerdown',
-        handleActivation,
-        options
-      )
-      this.ownerDocument.addEventListener(
-        'touchend',
-        handleActivation,
-        options
-      )
+      this.ownerDocument.addEventListener('keydown', handleActivation, options)
+      this.ownerDocument.addEventListener('pointerdown', handleActivation, options)
+      this.ownerDocument.addEventListener('touchend', handleActivation, options)
     }
 
     #connectMotionPreference(): void {
@@ -423,14 +359,9 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
         return
       }
 
-      this.#motionQuery = globalThis.matchMedia(
-        '(prefers-reduced-motion: reduce)',
-      )
+      this.#motionQuery = globalThis.matchMedia('(prefers-reduced-motion: reduce)')
       if (typeof this.#motionQuery.addEventListener === 'function') {
-        this.#motionQuery.addEventListener(
-          'change',
-          this.#handleMotionPreferenceChange,
-        )
+        this.#motionQuery.addEventListener('change', this.#handleMotionPreferenceChange)
       } else {
         this.#motionQuery.addListener(this.#handleMotionPreferenceChange)
       }
@@ -438,10 +369,7 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
 
     #disconnectMotionPreference(): void {
       if (typeof this.#motionQuery?.removeEventListener === 'function') {
-        this.#motionQuery.removeEventListener(
-          'change',
-          this.#handleMotionPreferenceChange,
-        )
+        this.#motionQuery.removeEventListener('change', this.#handleMotionPreferenceChange)
       } else {
         this.#motionQuery?.removeListener(this.#handleMotionPreferenceChange)
       }
@@ -460,10 +388,7 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       }
 
       for (const key of ORBZ_COLOR_KEYS) {
-        this.#normalizeColorAttribute(
-          key,
-          this.getAttribute(ORBZ_COLOR_ATTRIBUTES[key]),
-        )
+        this.#normalizeColorAttribute(key, this.getAttribute(ORBZ_COLOR_ATTRIBUTES[key]))
       }
 
       this.#synchronizeColors()
@@ -479,10 +404,7 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       this.#visualRoot.style.setProperty('--orbz-size', normalized)
     }
 
-    #normalizeColorAttribute(
-      key: keyof OrbzColors,
-      value: string | null,
-    ): boolean {
+    #normalizeColorAttribute(key: keyof OrbzColors, value: string | null): boolean {
       if (value === null) {
         return true
       }
@@ -509,10 +431,7 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
         : mergeOrbzColors(this.#readColorOverrides())
 
       for (const key of ORBZ_COLOR_KEYS) {
-        this.#visualRoot.style.setProperty(
-          `--orbz-${key}`,
-          colors[key]
-        )
+        this.#visualRoot.style.setProperty(`--orbz-${key}`, colors[key])
       }
 
       this.#queueColorConflictCheck()
@@ -527,19 +446,16 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       queueMicrotask(() => {
         this.#colorConflictCheckQueued = false
         const customAttributes = ORBZ_COLOR_KEYS.filter((key) =>
-          this.hasAttribute(ORBZ_COLOR_ATTRIBUTES[key]),
+          this.hasAttribute(ORBZ_COLOR_ATTRIBUTES[key])
         )
-        const hasConflict =
-          this.hasAttribute('preset') && customAttributes.length > 0
+        const hasConflict = this.hasAttribute('preset') && customAttributes.length > 0
 
         if (hasConflict && !this.#hasColorConflict) {
-          const names = customAttributes
-            .map((key) => ORBZ_COLOR_ATTRIBUTES[key])
-            .join(', ')
+          const names = customAttributes.map((key) => ORBZ_COLOR_ATTRIBUTES[key]).join(', ')
           console.error(
             `[Orbz] preset='${this.preset}' cannot be combined with ` +
               `${names}. ` +
-              'The preset is applied and custom color attributes are ignored.',
+              'The preset is applied and custom color attributes are ignored.'
           )
         }
         this.#hasColorConflict = hasConflict
@@ -605,20 +521,18 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       const reducedMotion = this.reducedMotion
       const reduced =
         reducedMotion === 'always' ||
-        (reducedMotion === DEFAULT_ORBZ_REDUCED_MOTION &&
-          (this.#motionQuery?.matches ?? false))
+        (reducedMotion === DEFAULT_ORBZ_REDUCED_MOTION && (this.#motionQuery?.matches ?? false))
 
       this.#animationService.render({
         paused: this.paused,
         reduced,
         speed: this.speed,
-        state: this.state,
+        state: this.state
       })
     }
   }
 
-  const elementConstructor =
-    OrbzHTMLElement as unknown as OrbzElementConstructor
+  const elementConstructor = OrbzHTMLElement as unknown as OrbzElementConstructor
   ELEMENT_CONSTRUCTORS.set(HTMLElementBase, elementConstructor)
 
   return elementConstructor

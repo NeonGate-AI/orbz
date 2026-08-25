@@ -1,7 +1,6 @@
 import type { OrbzIntelligencePort } from '@ports/intelligence.port'
 import type { OrbzVoiceEnginePort } from '@ports/voice-engine.port'
 import { resolveTalkText } from '@talk/resolve-talk-text.compute'
-import { DEFAULT_TALK_FLOW } from '@talk/talk.data'
 import type { OrbzTalkContext, OrbzTalkStep } from '@talk/talk.types'
 
 type SpeakingChangeHandler = (speaking: boolean) => void
@@ -9,21 +8,16 @@ type TalkErrorHandler = (error: unknown) => void
 
 export class OrbzTalkRunnerService {
   #context: OrbzTalkContext = {}
-  #flow: readonly OrbzTalkStep[] = DEFAULT_TALK_FLOW
+  #flow: readonly OrbzTalkStep[] = []
   #intelligence: OrbzIntelligencePort | undefined
   #position = 0
   #run = 0
   #speech = 0
   readonly #onError: TalkErrorHandler
   readonly #onSpeakingChange: SpeakingChangeHandler
-  #voiceEngine: OrbzVoiceEnginePort
+  #voiceEngine: OrbzVoiceEnginePort | undefined
 
-  constructor(
-    voiceEngine: OrbzVoiceEnginePort,
-    onSpeakingChange: SpeakingChangeHandler,
-    onError: TalkErrorHandler
-  ) {
-    this.#voiceEngine = voiceEngine
+  constructor(onSpeakingChange: SpeakingChangeHandler, onError: TalkErrorHandler) {
     this.#onSpeakingChange = onSpeakingChange
     this.#onError = onError
   }
@@ -32,20 +26,30 @@ export class OrbzTalkRunnerService {
     return Object.freeze({ ...this.#context })
   }
 
+  get intelligence(): OrbzIntelligencePort | undefined {
+    return this.#intelligence
+  }
+
   set intelligence(value: OrbzIntelligencePort | undefined) {
     this.#intelligence = value
   }
 
-  set voiceEngine(value: OrbzVoiceEnginePort) {
-    this.#speech += 1
-    this.#voiceEngine.stop()
-    this.#onSpeakingChange(false)
+  get voiceEngine(): OrbzVoiceEnginePort | undefined {
+    return this.#voiceEngine
+  }
+
+  set voiceEngine(value: OrbzVoiceEnginePort | undefined) {
+    this.stop()
     this.#voiceEngine = value
   }
 
-  async start(
-    flow: readonly OrbzTalkStep[] = DEFAULT_TALK_FLOW
-  ): Promise<void> {
+  async start(flow: readonly OrbzTalkStep[]): Promise<void> {
+    if (!this.#voiceEngine) {
+      const error = createVoiceEngineNotConfiguredError()
+      this.#onError(error)
+      throw error
+    }
+
     this.stop()
     this.#context = {}
     this.#flow = [...flow]
@@ -81,7 +85,7 @@ export class OrbzTalkRunnerService {
   stop(): void {
     this.#run += 1
     this.#speech += 1
-    this.#voiceEngine.stop()
+    this.#voiceEngine?.stop()
     this.#onSpeakingChange(false)
   }
 
@@ -92,10 +96,7 @@ export class OrbzTalkRunnerService {
         return
       }
 
-      const spoken = await this.#speak(
-        resolveTalkText(step.text, this.#context),
-        run
-      )
+      const spoken = await this.#speak(resolveTalkText(step.text, this.#context), run)
       if (!spoken || run !== this.#run) {
         return
       }
@@ -122,10 +123,7 @@ export class OrbzTalkRunnerService {
       const response = await this.#intelligence.respond(input, this.context)
       if (run === this.#run) {
         const normalizedResponse = response.trim()
-        await this.#speak(
-          normalizedResponse.length > 0 ? normalizedResponse : step.fallback,
-          run
-        )
+        await this.#speak(normalizedResponse.length > 0 ? normalizedResponse : step.fallback, run)
       }
     } catch (error) {
       this.#onError(error)
@@ -138,12 +136,18 @@ export class OrbzTalkRunnerService {
       return false
     }
 
+    const voiceEngine = this.#voiceEngine
+    if (!voiceEngine) {
+      this.#onError(createVoiceEngineNotConfiguredError())
+      return false
+    }
+
     const speech = ++this.#speech
-    this.#voiceEngine.stop()
+    voiceEngine.stop()
     this.#onSpeakingChange(true)
 
     try {
-      await this.#voiceEngine.speak(text)
+      await voiceEngine.speak(text)
       return true
     } catch (error) {
       this.#onError(error)
@@ -154,4 +158,8 @@ export class OrbzTalkRunnerService {
       }
     }
   }
+}
+
+function createVoiceEngineNotConfiguredError(): Error {
+  return new Error('Orbz voiceEngine must be configured before startTalking().')
 }

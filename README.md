@@ -30,3 +30,31 @@ import '@neongate-ai/orbz/browser'
 
 `react-types` is type-only integration. The rendered UI remains the native
 `<orb-z>` Web Component.
+
+`className` is intentionally excluded from the typed React API. Configure the
+visual through presets and the documented color properties, and use an outer
+element for page layout. Native HTML still supports `class` on every custom
+element, but a host class cannot style Orbz's closed shadow tree.
+
+## Speech is opt-in
+
+Connecting `<orb-z>` never starts speech. An implementation must explicitly
+provide a voice engine and call `startTalking()`:
+
+```ts
+import {
+  type OrbzElement,
+  WebSpeechAdapter
+} from '@neongate-ai/orbz'
+import '@neongate-ai/orbz/browser'
+
+const orb = document.querySelector<OrbzElement>('orb-z')
+
+if (orb) {
+  orb.voiceEngine = new WebSpeechAdapter({ language: 'pt-BR' })
+  await orb.startTalking()
+}
+```
+
+Assigning a voice engine alone remains silent. Call `stopTalking()` to stop the
+active flow and clear `voiceEngine` to remove the configured provider.

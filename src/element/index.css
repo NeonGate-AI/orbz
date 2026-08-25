@@ -1,198 +1,174 @@
-  :host {
-    box-sizing: border-box;
-    contain: layout style;
-    display: inline-grid;
-    isolation: isolate;
-    place-items: center;
-    vertical-align: middle;
-  }
+:host {
+  box-sizing: border-box;
+  contain: layout style;
+  display: inline-grid;
+  isolation: isolate;
+  place-items: center;
+  vertical-align: middle;
+}
 
-  :host([hidden]) {
-    display: none;
-  }
+:host([hidden]) {
+  display: none;
+}
 
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-  .orbz-root {
-    --orbz-accent: #ff4dde;
-    --orbz-angle: 0deg;
-    --orbz-background: #14142b;
-    --orbz-contrast: 1.48;
-    --orbz-highlight: #ffb07a;
-    --orbz-primary: #6c5cff;
-    --orbz-saturation: 1.28;
-    --orbz-secondary: #00e9ff;
-    --orbz-size: 16rem;
+.orbz-root {
+  --orbz-angle: 0deg;
 
-    display: grid;
-    height: var(--orbz-size);
-    place-items: center;
-    position: relative;
-    transform-origin: center;
-    width: var(--orbz-size);
-  }
+  display: grid;
+  height: var(--orbz-size);
+  place-items: center;
+  position: relative;
+  transform-origin: center;
+  width: var(--orbz-size);
+}
 
-  .orbz-aura,
-  .orbz-ring,
-  .orbz-field,
-  .orbz-texture,
-  .orbz-core,
-  .orbz-highlight {
-    pointer-events: none;
-    position: absolute;
-    transform-origin: center;
-  }
+.orbz-aura,
+.orbz-ring,
+.orbz-field,
+.orbz-texture,
+.orbz-core,
+.orbz-highlight {
+  pointer-events: none;
+  position: absolute;
+  transform-origin: center;
+}
 
-  .orbz-aura {
-    background: radial-gradient(
-      circle at 50% 52%,
-      color-mix(in srgb, var(--orbz-accent) 40%, var(--orbz-primary)) 0%,
-      transparent 66%
+.orbz-aura {
+  background: radial-gradient(
+    circle at 50% 52%,
+    color-mix(in srgb, var(--orbz-accent) 40%, var(--orbz-primary)) 0%,
+    transparent 66%
+  );
+  border-radius: 9999px;
+  filter: blur(calc(var(--orbz-size) * 0.22));
+  inset: -16%;
+}
+
+.orbz-ring {
+  border: 1px solid color-mix(in srgb, var(--orbz-secondary) 58%, var(--orbz-primary));
+  border-radius: 9999px;
+  box-shadow: 0 0 calc(var(--orbz-size) * 0.11)
+    color-mix(in srgb, var(--orbz-accent) 24%, transparent);
+  inset: -7%;
+}
+
+.orbz-sphere {
+  background: var(--orbz-background);
+  border-radius: 9999px;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 0 calc(var(--orbz-size) * 0.17) color-mix(in srgb, var(--orbz-primary) 18%, transparent),
+    0 0 calc(var(--orbz-size) * 0.34) color-mix(in srgb, var(--orbz-accent) 8%, transparent);
+  display: grid;
+  height: 100%;
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+  transform: translateZ(0);
+  width: 100%;
+}
+
+:host([elevated]) .orbz-sphere {
+  box-shadow:
+    0 0 calc(var(--orbz-size) * 0.075) calc(var(--orbz-size) * 0.016) rgb(0 0 0 / 30%),
+    0 0 calc(var(--orbz-size) * 0.14) calc(var(--orbz-size) * 0.008) rgb(0 0 0 / 18%),
+    inset 0 0 0 1px rgb(255 255 255 / 10%),
+    0 0 calc(var(--orbz-size) * 0.17) color-mix(in srgb, var(--orbz-primary) 18%, transparent),
+    0 0 calc(var(--orbz-size) * 0.34) color-mix(in srgb, var(--orbz-accent) 8%, transparent);
+}
+
+.orbz-field {
+  background:
+    conic-gradient(
+      from calc(var(--orbz-angle) * 2) at 25% 70%,
+      var(--orbz-primary),
+      transparent 20% 80%,
+      var(--orbz-primary)
+    ),
+    conic-gradient(
+      from calc(var(--orbz-angle) * 2) at 45% 75%,
+      var(--orbz-secondary),
+      transparent 30% 60%,
+      var(--orbz-secondary)
+    ),
+    conic-gradient(
+      from calc(var(--orbz-angle) * -3) at 80% 20%,
+      var(--orbz-highlight),
+      transparent 40% 60%,
+      var(--orbz-highlight)
+    ),
+    conic-gradient(
+      from calc(var(--orbz-angle) * 1.5) at 60% 35%,
+      var(--orbz-accent),
+      transparent 25% 75%,
+      var(--orbz-accent)
+    ),
+    conic-gradient(
+      from calc(var(--orbz-angle) * 2) at 15% 5%,
+      var(--orbz-secondary),
+      transparent 10% 90%,
+      var(--orbz-secondary)
+    ),
+    conic-gradient(
+      from var(--orbz-angle) at 20% 80%,
+      var(--orbz-highlight),
+      transparent 10% 90%,
+      var(--orbz-highlight)
+    ),
+    conic-gradient(
+      from calc(var(--orbz-angle) * -2) at 85% 10%,
+      var(--orbz-primary),
+      transparent 20% 80%,
+      var(--orbz-primary)
     );
-    border-radius: 9999px;
-    filter: blur(calc(var(--orbz-size) * 0.22));
-    inset: -16%;
-  }
+  border-radius: 9999px;
+  filter: blur(calc(var(--orbz-size) * 0.014)) contrast(var(--orbz-contrast))
+    saturate(var(--orbz-saturation));
+  inset: 0;
+  will-change: filter;
+}
 
-  .orbz-ring {
-    border: 1px solid
-      color-mix(in srgb, var(--orbz-secondary) 58%, var(--orbz-primary));
-    border-radius: 9999px;
-    box-shadow: 0 0 calc(var(--orbz-size) * 0.11)
-      color-mix(in srgb, var(--orbz-accent) 24%, transparent);
-    inset: -7%;
-  }
+.orbz-texture {
+  -webkit-mask-image: radial-gradient(black 20%, transparent 76%);
+  backdrop-filter: blur(calc(var(--orbz-size) * 0.025)) contrast(1.55);
+  background: radial-gradient(
+    circle at center,
+    var(--orbz-background) calc(var(--orbz-size) * 0.004),
+    transparent calc(var(--orbz-size) * 0.005)
+  );
+  background-size: calc(var(--orbz-size) * 0.01) calc(var(--orbz-size) * 0.01);
+  border-radius: 9999px;
+  inset: 0;
+  mask-image: radial-gradient(black 20%, transparent 76%);
+  mix-blend-mode: overlay;
+}
 
-  .orbz-sphere {
-    background: var(--orbz-background);
-    border-radius: 9999px;
-    box-shadow:
-      inset 0 0 0 1px rgb(255 255 255 / 10%),
-      0 0 calc(var(--orbz-size) * 0.17)
-        color-mix(in srgb, var(--orbz-primary) 18%, transparent),
-      0 0 calc(var(--orbz-size) * 0.34)
-        color-mix(in srgb, var(--orbz-accent) 8%, transparent);
-    display: grid;
-    height: 100%;
-    isolation: isolate;
-    overflow: hidden;
-    position: relative;
-    transform: translateZ(0);
-    width: 100%;
-  }
+.orbz-core {
+  background: radial-gradient(
+    circle at 48% 46%,
+    color-mix(in srgb, var(--orbz-secondary) 54%, white) 0%,
+    color-mix(in srgb, var(--orbz-primary) 44%, var(--orbz-accent)) 38%,
+    transparent 72%
+  );
+  border-radius: 9999px;
+  filter: blur(calc(var(--orbz-size) * 0.075));
+  inset: 18%;
+  mix-blend-mode: screen;
+  z-index: 1;
+}
 
-  :host([elevated]) .orbz-sphere {
-    box-shadow:
-      0 0 calc(var(--orbz-size) * 0.075)
-        calc(var(--orbz-size) * 0.016) rgb(0 0 0 / 30%),
-      0 0 calc(var(--orbz-size) * 0.14)
-        calc(var(--orbz-size) * 0.008) rgb(0 0 0 / 18%),
-      inset 0 0 0 1px rgb(255 255 255 / 10%),
-      0 0 calc(var(--orbz-size) * 0.17)
-        color-mix(in srgb, var(--orbz-primary) 18%, transparent),
-      0 0 calc(var(--orbz-size) * 0.34)
-        color-mix(in srgb, var(--orbz-accent) 8%, transparent);
-  }
-
-  .orbz-field {
-    background:
-      conic-gradient(
-        from calc(var(--orbz-angle) * 2) at 25% 70%,
-        var(--orbz-primary),
-        transparent 20% 80%,
-        var(--orbz-primary)
-      ),
-      conic-gradient(
-        from calc(var(--orbz-angle) * 2) at 45% 75%,
-        var(--orbz-secondary),
-        transparent 30% 60%,
-        var(--orbz-secondary)
-      ),
-      conic-gradient(
-        from calc(var(--orbz-angle) * -3) at 80% 20%,
-        var(--orbz-highlight),
-        transparent 40% 60%,
-        var(--orbz-highlight)
-      ),
-      conic-gradient(
-        from calc(var(--orbz-angle) * 1.5) at 60% 35%,
-        var(--orbz-accent),
-        transparent 25% 75%,
-        var(--orbz-accent)
-      ),
-      conic-gradient(
-        from calc(var(--orbz-angle) * 2) at 15% 5%,
-        var(--orbz-secondary),
-        transparent 10% 90%,
-        var(--orbz-secondary)
-      ),
-      conic-gradient(
-        from var(--orbz-angle) at 20% 80%,
-        var(--orbz-highlight),
-        transparent 10% 90%,
-        var(--orbz-highlight)
-      ),
-      conic-gradient(
-        from calc(var(--orbz-angle) * -2) at 85% 10%,
-        var(--orbz-primary),
-        transparent 20% 80%,
-        var(--orbz-primary)
-      );
-    border-radius: 9999px;
-    filter: blur(calc(var(--orbz-size) * 0.014))
-      contrast(var(--orbz-contrast)) saturate(var(--orbz-saturation));
-    inset: 0;
-    will-change: filter;
-  }
-
-  .orbz-texture {
-    -webkit-mask-image: radial-gradient(black 20%, transparent 76%);
-    backdrop-filter: blur(calc(var(--orbz-size) * 0.025)) contrast(1.55);
-    background: radial-gradient(
-      circle at center,
-      var(--orbz-background) calc(var(--orbz-size) * 0.004),
-      transparent calc(var(--orbz-size) * 0.005)
-    );
-    background-size:
-      calc(var(--orbz-size) * 0.01) calc(var(--orbz-size) * 0.01);
-    border-radius: 9999px;
-    inset: 0;
-    mask-image: radial-gradient(black 20%, transparent 76%);
-    mix-blend-mode: overlay;
-  }
-
-  .orbz-core {
-    background: radial-gradient(
-      circle at 48% 46%,
-      color-mix(in srgb, var(--orbz-secondary) 54%, white) 0%,
-      color-mix(in srgb, var(--orbz-primary) 44%, var(--orbz-accent)) 38%,
-      transparent 72%
-    );
-    border-radius: 9999px;
-    filter: blur(calc(var(--orbz-size) * 0.075));
-    inset: 18%;
-    mix-blend-mode: screen;
-    z-index: 1;
-  }
-
-  .orbz-highlight {
-    background:
-      radial-gradient(
-        circle at 32% 22%,
-        rgb(255 255 255 / 19%),
-        transparent 29%
-      ),
-      radial-gradient(
-        circle at 72% 76%,
-        rgb(255 255 255 / 4%),
-        transparent 48%
-      );
-    border-radius: 9999px;
-    inset: 0;
-    mix-blend-mode: soft-light;
-    z-index: 1;
-  }
+.orbz-highlight {
+  background:
+    radial-gradient(circle at 32% 22%, rgb(255 255 255 / 19%), transparent 29%),
+    radial-gradient(circle at 72% 76%, rgb(255 255 255 / 4%), transparent 48%);
+  border-radius: 9999px;
+  inset: 0;
+  mix-blend-mode: soft-light;
+  z-index: 1;
+}
