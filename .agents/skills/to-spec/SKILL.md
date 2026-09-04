@@ -1,6 +1,6 @@
 ---
 name: to-spec
-description: Synthesize an owner-approved repository change into the next canonical Orbz numbered spec.
+description: Use when an owner-approved Orbz repository change needs to be synthesized into the next canonical numbered SPEC with acceptance criteria and evidence.
 disable-model-invocation: true
 ---
 

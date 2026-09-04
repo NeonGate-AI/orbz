@@ -1,3 +1,11 @@
+---
+description: Scopes the shell-only Orb engineering CLI, command ownership, network boundaries, cleanup safety, setup behavior, and CI diagnostics.
+globs:
+  - "cli/**"
+  - "package.json"
+  - ".husky/**"
+  - ".github/workflows/**"
+---
 # Rule 008: Engineering CLI
 
 - Effective: 2026-09-04

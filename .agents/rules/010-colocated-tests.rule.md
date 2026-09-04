@@ -1,3 +1,12 @@
+---
+description: Scopes colocated Vitest suite naming, concern prefixes, root test support files, build exclusions, and SSR test-environment selection.
+globs:
+  - "src/**/*.test.ts"
+  - "test/**"
+  - "vitest.config.ts"
+  - "tsconfig.test.json"
+  - "tsconfig.json"
+---
 # Rule 010: Colocated tests
 
 - Effective: 2026-09-04

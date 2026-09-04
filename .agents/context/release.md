@@ -19,3 +19,6 @@ explicit SPEC plus an ADR when the commitment is architectural.
 `package.json#scripts` does not mirror the Orb command surface. It retains only
 the `setup` bridge and npm lifecycle gates. Consumer setup is explicit through
 `npx @neongate-ai/orbz` and never runs from an install lifecycle. Harness-score remains explicit engineering-only tooling and is never part of the runtime API.
+
+
+Agent runtime guardrails deny autonomous package publication and require human approval for tag, push, merge/rebase, and PR-merge boundaries. These hooks supplement, but do not replace, Orb checks, Git hooks, and CI.

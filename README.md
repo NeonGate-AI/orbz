@@ -352,6 +352,25 @@ The same shell CLI is published as the `orb` package binary so that
 `npx -y @neongate-ai/orbz@latest` can install Orbz into a consuming project.
 Repository-only commands reject execution from the temporary npm package.
 
+### Agent harness
+
+`AGENTS.md` and `.agents/` are the cross-tool source of truth. Reusable procedures
+live in `.agents/skills/`, explicit task sequences live in `.agents/workflows/`,
+and deterministic checks live in `.audits/`.
+
+Cursor adapters add a shell safety gate and post-edit Biome feedback through
+`.cursor/hooks.json`. Package publication and destructive Git operations are
+blocked for agents; release-boundary pushes, tags, merges, and version changes
+require human approval.
+
+Measure the pinned maturity model locally with:
+
+```bash
+./cli/orb harness .
+```
+
+CI independently enforces Harness Score `1.5.2` at maturity level L4.
+
 ## Git quality gates and semantic versioning
 
 Run the Git setup after installing dependencies:

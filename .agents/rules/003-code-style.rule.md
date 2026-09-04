@@ -1,3 +1,14 @@
+---
+description: Scopes TypeScript, JavaScript, configuration, formatting, import-order, typing, and secret-handling conventions for Orbz engineering changes.
+globs:
+  - "src/**"
+  - "test/**"
+  - "cli/**"
+  - "*.ts"
+  - "*.js"
+  - "*.cjs"
+  - "*.json"
+---
 # Rule 003: TypeScript and code style
 
 - Effective: 2026-08-21

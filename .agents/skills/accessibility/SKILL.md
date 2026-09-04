@@ -1,3 +1,8 @@
+---
+name: accessibility
+description: Use when changing Orbz accessibility semantics, reduced-motion behavior, host labeling guidance, transcripts, focus behavior, or assistive-technology expectations.
+---
+
 # Accessible Orbz change procedure
 
 ## Prerequisites

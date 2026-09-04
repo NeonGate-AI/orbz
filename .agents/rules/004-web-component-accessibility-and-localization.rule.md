@@ -1,3 +1,11 @@
+---
+description: Scopes accessibility, localization, reduced motion, host semantics, and closed-shadow behavior for the native orb-z Web Component.
+globs:
+  - "src/element/**"
+  - "src/factories/**"
+  - "src/services/animation.service.ts"
+  - "README.md"
+---
 # Rule 004: Web Component accessibility and localization
 
 - Effective: 2026-08-21

@@ -46,8 +46,23 @@ jobs:
         if: github.event_name == 'push'
         run: ./cli/orb git lint --last
 
-      - name: Check package
-        run: ./cli/orb check
+      - name: Lint
+        run: ./cli/orb lint
 
-      - name: Verify npm payload
+      - name: Typecheck
+        run: ./cli/orb typecheck
+
+      - name: Test
+        run: ./cli/orb test
+
+      - name: Build
+        run: ./cli/orb build
+
+      - name: Validate package version
+        run: ./cli/orb git version-check
+
+      - name: Run repository audits
+        run: ./cli/orb audit
+
+      - name: Verify npm payload and prepack gate
         run: npm pack --dry-run

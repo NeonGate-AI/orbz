@@ -1,3 +1,11 @@
+---
+description: Scopes explicit speech, pt-BR defaults, voice adapters, talk-flow behavior, cancellation, events, and provider-boundary constraints.
+globs:
+  - "src/talk/**"
+  - "src/services/talk-runner.service.ts"
+  - "src/factories/element-class.factory.ts"
+  - "README.md"
+---
 # Rule 005: Voice and speech behavior
 
 - Effective: 2026-08-21

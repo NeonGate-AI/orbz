@@ -107,7 +107,18 @@ if grep -F "include: ['src/**/*.test.ts']" vitest.config.ts >/dev/null 2>&1; the
 if grep -F "'src/**/*.test.ts'" vitest.config.ts >/dev/null 2>&1; then pass 'coverage excludes colocated tests'; else fail 'coverage must exclude colocated tests'; fi
 if grep -F 'src/**/*.test.ts' tsconfig.json >/dev/null 2>&1; then pass 'source TypeScript excludes colocated tests'; else fail 'source TypeScript must exclude colocated tests'; fi
 if grep -F '@vitest-environment node' src/index.test.ts >/dev/null 2>&1; then pass 'SSR import test uses Node'; else fail 'SSR import test must use Node'; fi
-if grep -F 'run: ./cli/orb check' .github/workflows/ci.yml >/dev/null 2>&1; then pass 'CI runs the complete Orb quality gate'; else fail 'CI does not run ./cli/orb check'; fi
+for ci_sensor in lint typecheck test build; do
+  if grep -F "run: ./cli/orb $ci_sensor" .github/workflows/ci.yml >/dev/null 2>&1; then
+    pass "CI exposes Orb $ci_sensor explicitly"
+  else
+    fail "CI must expose ./cli/orb $ci_sensor as an explicit sensor step"
+  fi
+done
+if grep -F 'run: npm pack --dry-run' .github/workflows/ci.yml >/dev/null 2>&1; then
+  pass 'CI exercises npm payload and prepack gate'
+else
+  fail 'CI must exercise npm pack --dry-run'
+fi
 
 if [ "$failures" -ne 0 ]; then
   printf '\n%d test audit failure(s).\n' "$failures" >&2

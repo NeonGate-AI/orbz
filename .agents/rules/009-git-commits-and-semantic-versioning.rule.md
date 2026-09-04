@@ -1,3 +1,12 @@
+---
+description: Scopes Conventional Commits, Commitlint, Husky, staged SemVer validation, release signals, and Git quality gates for Orbz.
+globs:
+  - "package.json"
+  - "commitlint.config.cjs"
+  - ".lintstagedrc.json"
+  - ".husky/**"
+  - ".github/workflows/**"
+---
 # Rule 009: Git commits and semantic versioning
 
 - Effective: 2026-09-04

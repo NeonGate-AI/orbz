@@ -1,3 +1,11 @@
+---
+description: Scopes Orbz engineering-harness records, navigation, deterministic audits, accurate dates, terminology, and documentation synchronization.
+globs:
+  - ".agents/**"
+  - ".audits/**"
+  - "AGENTS.md"
+  - "README.md"
+---
 # Rule 007: Harness, documentation, and audits
 
 - Effective: 2026-08-21

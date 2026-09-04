@@ -1,6 +1,6 @@
 ---
 name: to-tickets
-description: Decompose one ready Orbz spec into vertical GitHub issues with explicit blocking edges.
+description: Use when a ready Orbz SPEC needs to be decomposed into vertical GitHub issues with explicit scope, acceptance evidence, and blocking edges.
 disable-model-invocation: true
 ---
 

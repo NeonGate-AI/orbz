@@ -1,3 +1,10 @@
+---
+description: Scopes source organization, concern folders, naming, suffixes, and colocated-test placement for the Orbz TypeScript package.
+globs:
+  - "src/**"
+  - "tsconfig*.json"
+  - "tsdown*.ts"
+---
 # Rule 002: Source organization
 
 - Effective: 2026-08-21

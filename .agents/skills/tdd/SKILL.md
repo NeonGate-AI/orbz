@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Implement one Orbz behavior at a declared public seam through a strict red-to-green loop.
+description: Use when implementing or changing a declared Orbz behavior and you need a strict red-to-green loop at a stable public seam with regression evidence.
 ---
 
 # Test-Driven Development

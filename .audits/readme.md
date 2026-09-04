@@ -7,8 +7,6 @@ Run all audits with:
 
 ```bash
 ./cli/orb audit
-# or
-pnpm audit
 ```
 
 The complete quality gate also runs them through `./cli/orb check`.
@@ -16,7 +14,8 @@ The complete quality gate also runs them through `./cli/orb check`.
 - `architecture.audit.sh`: source boundaries, concern folders, and speech defaults.
 - `cli.audit.sh`: shell-only Orb command surface and removal of imported application assumptions.
 - `documentation.audit.sh`: title assets, banner position, package usage, and Git guidance.
-- `harness.audit.sh`: record structure, dates, navigation, and terminology.
+- `harness.audit.sh`: record structure, frontmatter, dates, navigation, and terminology.
+- `guardrails.audit.sh`: Cursor hook configuration, shell gate decisions, edit-hook containment, workflows, and reviewer metadata.
 - `package.audit.sh`: payload, scripts, dependencies, hooks, Commitlint, and SemVer policy.
 - `tests.audit.sh`: colocated suite layout, naming, Vitest configuration, and CI integration.
 

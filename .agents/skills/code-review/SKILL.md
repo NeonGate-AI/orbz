@@ -1,3 +1,8 @@
+---
+name: code-review
+description: Use when reviewing Orbz changes for public API compatibility, SSR safety, Web Component lifecycle, voice cancellation, accessibility, tests, packaging, or harness compliance.
+---
+
 # Orbz code review procedure
 
 1. Read the changed SPEC and linked ADRs/rules.

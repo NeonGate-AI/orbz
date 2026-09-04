@@ -1,3 +1,8 @@
+---
+name: harness-maintenance
+description: Use when adding or changing Orbz context, ADRs, rules, SPECs, skills, workflows, audits, hooks, guardrails, or other engineering-harness artifacts.
+---
+
 # Harness maintenance procedure
 
 1. Identify whether the change is context, decision, constraint, scope, procedure, or check.

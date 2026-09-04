@@ -1,3 +1,10 @@
+---
+description: Scopes the published Orb binary, npx project setup, package-manager detection, runtime payload, and consumer-install safety boundaries.
+globs:
+  - "package.json"
+  - "cli/**"
+  - "README.md"
+---
 # Rule 011: Public Orb installer
 
 - Effective: 2026-09-04

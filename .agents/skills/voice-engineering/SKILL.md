@@ -1,3 +1,8 @@
+---
+name: voice-engineering
+description: Use when changing speech playback, voice adapters, language selection, talk flows, cancellation, speaking events, provider boundaries, or voice-engine integration.
+---
+
 # Orbz voice engineering procedure
 
 1. Define who owns copy, locale, credentials, playback activation, and cancellation.

@@ -1,3 +1,8 @@
+---
+name: implement
+description: Use when implementing an approved Orbz SPEC or regression fix and you need a disciplined path from reproduction and tests through the narrowest production change and validation.
+---
+
 # Orbz implementation procedure
 
 1. Reproduce the problem and confirm the relevant public contract.

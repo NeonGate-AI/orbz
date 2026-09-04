@@ -7,4 +7,4 @@ engineering CLI, harness files, or package metadata.
 Numbered rules are stable identifiers. A rule change requires a SPEC and should
 reference an ADR when it changes architecture. Current rules also require a
 shell-only Orb CLI, Conventional Commits, forward-only SemVer changes,
-colocated Vitest suites, and explicit npx project setup.
+colocated Vitest suites, explicit npx project setup, and agent runtime guardrails.

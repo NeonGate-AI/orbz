@@ -8,8 +8,8 @@ case "${1:-}" in
     cat <<'USAGE'
 Usage: orb harness [harness-score arguments]
 
-Run the external harness-score utility explicitly for this checkout. Arguments
-are forwarded to the utility. This command is engineering-only and is never
+Run pinned harness-score 1.5.2 explicitly for this checkout. Arguments are
+forwarded to the utility. This command is engineering-only and is never
 part of the Orbz runtime API.
 USAGE
     exit 0
@@ -18,4 +18,4 @@ esac
 
 orb_need npx
 cd "$ORB_PROJECT_ROOT"
-exec npx harness-score "$@"
+exec npx --yes harness-score@1.5.2 "$@"

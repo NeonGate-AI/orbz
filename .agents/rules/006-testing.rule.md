@@ -1,3 +1,12 @@
+---
+description: Scopes Vitest, Happy DOM, SSR, browser-dependent checks, deterministic fakes, regression evidence, and the complete Orbz quality gate.
+globs:
+  - "src/**/*.test.ts"
+  - "test/**"
+  - "vitest.config.ts"
+  - "tsconfig.test.json"
+  - ".github/workflows/**"
+---
 # Rule 006: Testing
 
 - Effective: 2026-08-21

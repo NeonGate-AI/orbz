@@ -1,3 +1,7 @@
+---
+description: Defines the immutable package, publishing, framework-agnostic, SSR-safe, and public compatibility boundaries for Orbz.
+alwaysApply: true
+---
 # Rule 001: Package contract
 
 - Effective: 2026-08-21

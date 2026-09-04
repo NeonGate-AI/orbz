@@ -16,7 +16,8 @@ This repository owns only the `@neongate-ai/orbz` npm package.
 10. `.agents/rules/009-git-commits-and-semantic-versioning.rule.md`
 11. `.agents/rules/010-colocated-tests.rule.md`
 12. `.agents/rules/011-public-orb-installer.rule.md`
-13. The relevant SPEC and linked ADRs.
+13. `.agents/rules/012-agent-runtime-guardrails.rule.md`
+14. The relevant SPEC and linked ADRs.
 
 ## Repository boundaries
 
@@ -30,14 +31,23 @@ This repository owns only the `@neongate-ai/orbz` npm package.
 
 ## Harness, CLI, and Git gates
 
-- `.agents/` contains context, ADRs, rules, specs, prompts, and procedures.
+- `.agents/` contains context, ADRs, rules, specs, prompts, skills, and explicit workflows.
 - `.audits/` contains deterministic repository checks.
 - `./cli/orb help` lists the shell-only local engineering commands.
 - Husky hooks are thin adapters; Orb owns pre-commit and commit-message behavior.
+- `.cursor/hooks.json` enforces agent shell guardrails and fast post-edit feedback; release/publication boundaries remain human-controlled.
+- `.agents/workflows/` contains explicit reusable task sequences; use them instead of inventing ad hoc release or regression procedures.
 - Commit messages follow Conventional Commits and package versions follow SemVer.
 - Executable Vitest suites are colocated with source under `src/`.
 - Start behavioral changes with a SPEC and link an ADR when architecture changes.
 - Keep a `readme.md` in every directory under `.agents/` and `.audits/`.
+
+## Task routing
+
+- Regression: use `.agents/workflows/regression-fix.md` plus the relevant domain skill.
+- Review: use `.agents/workflows/review.md`; the optional Cursor `orbz-reviewer` subagent is review-only.
+- Release: use `.agents/workflows/release.md`; agents must stop for human approval at tag/push/publish boundaries.
+- Harness improvement: use `.agents/workflows/harness-improvement.md` and Rule 012.
 
 ## Engineering harness command
 
