@@ -1,6 +1,6 @@
 {
   "name": "@neongate-ai/orbz",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A framework-agnostic, customizable AI voice orb built as a strict, SSR-safe web component.",
   "type": "module",
   "license": "MIT",
