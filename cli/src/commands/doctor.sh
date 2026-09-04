@@ -62,7 +62,7 @@ else
   fail install-state missing 'Run pnpm install --no-frozen-lockfile.'
 fi
 
-for dependency in typescript @biomejs/biome tsdown vitest happy-dom @vitest/coverage-v8 @neongate-ai/neon @commitlint/cli @commitlint/config-conventional husky lint-staged semver; do
+for dependency in typescript @biomejs/biome tsdown vitest happy-dom @vitest/coverage-v8 @commitlint/cli @commitlint/config-conventional husky lint-staged semver; do
   expected=$(orb_package_dependency_version "$dependency" 2>/dev/null || true)
   actual=$(orb_local_package_version "$dependency" 2>/dev/null || true)
   if [ -z "$expected" ]; then
