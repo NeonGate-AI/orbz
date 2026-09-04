@@ -17,9 +17,6 @@ importers:
       '@commitlint/config-conventional':
         specifier: 21.2.2
         version: 21.2.2
-      '@neongate-ai/neon':
-        specifier: 0.1.0
-        version: 0.1.0
       '@types/react':
         specifier: 19.2.18
         version: 19.2.18
@@ -226,11 +223,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
-
-  '@neongate-ai/neon@0.1.0':
-    resolution: {integrity: sha512-Miy28g0Ar9qMLFbv47ZtGsXhC6xVsanl/uNbrd6q2ac8ZP/i5wrbEUQPc0KvTBh6YbmRfEIzQaAw7U17INOTcw==}
-    engines: {node: '>=20.11.0', pnpm: '>=9.0.0'}
-    hasBin: true
 
   '@oxc-project/types@0.146.0':
     resolution: {integrity: sha512-XC0QsnnhVe7sLIWmYmdPw7x5P0h4W8vUU3Nv1ySgWXtvCz8NizoAEpGXA0sOYoJQV2Rl13LgURAHQ5cI5ILCSA==}
@@ -911,11 +903,6 @@ packages:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  prettier@3.9.6:
-    resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
-    engines: {node: '>=14'}
-    hasBin: true
-
   quansync@1.0.0:
     resolution: {integrity: sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA==}
 
@@ -1384,11 +1371,6 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
-
-  '@neongate-ai/neon@0.1.0':
-    dependencies:
-      prettier: 3.9.6
-      semver: 7.8.5
 
   '@oxc-project/types@0.146.0': {}
 
@@ -1893,8 +1875,6 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  prettier@3.9.6: {}
-
   quansync@1.0.0: {}
 
   require-from-string@2.0.2: {}
@@ -2023,7 +2003,7 @@ snapshots:
   vite@8.2.2(@types/node@26.4.1)(jiti@2.6.1)(yaml@2.9.0):
     dependencies:
       lightningcss: 1.33.0
-      picomatch: 4.0.5
+      picomatch: 4.0.7
       postcss: 8.5.28
       rolldown: 1.2.5
       tinyglobby: 0.2.17
