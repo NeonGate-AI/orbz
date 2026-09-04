@@ -1,16 +1,13 @@
-# Orbz&nbsp;<img src="./assets/images/neongate-sphere.png" alt="" width="44" height="44" align="middle">
+<p align="center">
+  <img
+    src="./assets/images/orbz-tagline.svg"
+    alt="One native voice-presence component for every web stack."
+  >
+</p>
 
-One native voice-presence component for every web stack.
-
-`@neongate-ai/orbz` is a framework-agnostic, SSR-safe Web Component for giving
-AI voice interfaces a visible state, motion system, configurable palette, and
-provider-neutral speech boundary. The package renders the native `<orb-z>`
-element; it does not ship a framework wrapper, application, persona, transcript,
-or backend.
-
-```bash
-npx -y --package=@neongate-ai/orbz@latest orb
-```
+<p align="center">
+  <img src="./assets/images/readme-banner.png" alt="Orbz voice presence component" width="100%">
+</p>
 
 <p align="center">
   <a href="https://paladini.io/harness-score/guide/maturity-model.html"><img alt="Harness Score L4" src="https://paladini.github.io/harness-score/maturity/badge-l4.svg" height="20"></a>
@@ -18,9 +15,13 @@ npx -y --package=@neongate-ai/orbz@latest orb
   <a href="https://www.npmjs.com/package/@neongate-ai/orbz"><img alt="npm version" src="https://img.shields.io/npm/v/%40neongate-ai%2Forbz?logo=npm" height="20"></a>
 </p>
 
-<p align="center">
-  <img src="./assets/images/readme-banner.png" alt="Orbz voice presence component" width="100%">
-</p>
+## TLDR
+
+`@neongate-ai/orbz` is a framework-agnostic, SSR-safe Web Component for giving
+AI voice interfaces a visible state, motion system, configurable palette, and
+provider-neutral speech boundary. The package renders the native `<orb-z>`
+element; it does not ship a framework wrapper, application, persona, transcript,
+or backend.
 
 - [Documentation](https://orbz.site)
 - [npm package](https://www.npmjs.com/package/@neongate-ai/orbz)
@@ -106,12 +107,6 @@ pnpm exec orb --help
 
 # npm
 npm exec -- orb --help
-
-# yarn
-yarn orb --help
-
-# bun
-bun run orb --help
 ```
 
 Consumer projects expose three public CLI operations:
@@ -241,7 +236,7 @@ visible text or an appropriate external live region.
 
 ## Presets
 
-Set `preset` to use one of the built-in five-color palettes.
+Set `preset` to use one of the last five-color of the year palettes.
 
 | Preset | Primary | Secondary | Accent | Highlight | Background |
 | --- | --- | --- | --- | --- | --- |
@@ -485,4 +480,26 @@ Tests live next to the source they verify; shared test setup and fixtures remain
 under `test/`. The intentional package payload is `dist/`, the POSIX shell
 `cli/`, and npm's standard root metadata.
 
-MIT © NeonGate AI
+## Next versions 
+I'm working on provide a IoC so you can pass your own voice model, less robotic. Newer OpenAI models like [GPT-Realtime-2](https://developers.openai.com/api/docs/models/gpt-realtime-2) has more human-like voice sound.
+
+## License
+
+#MIT © NeonGate AI
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
