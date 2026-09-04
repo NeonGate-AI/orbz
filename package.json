@@ -44,7 +44,8 @@
   ],
   "scripts": {
     "setup": "./cli/orb setup --launcher",
-    "prepack": "./cli/orb check"
+    "prepack": "./cli/orb check",
+    "harness": "npx harness-score"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.11",
