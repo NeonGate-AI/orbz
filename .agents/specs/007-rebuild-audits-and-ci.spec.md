@@ -14,14 +14,14 @@ CI gate did not run behavioral tests.
 ## Scope
 
 Replace audits with Orbz-specific checks and compose linting, type checks,
-Vitest, builds, and audits under `pnpm check`.
+Vitest, builds, and audits under `orb check`.
 
 ## Acceptance criteria
 
 - [x] Architecture, documentation, harness, package, and test audits exist.
 - [x] Scripts are POSIX shell, deterministic, executable, and network-free.
 - [x] The local CLI discovers and runs all audits.
-- [x] CI runs `pnpm check` and inspects `npm pack --dry-run`.
+- [x] CI runs `./cli/orb check` and inspects `npm pack --dry-run`.
 - [x] Generated outputs remain ignored and cleanable.
 
 ## Evidence

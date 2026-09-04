@@ -35,7 +35,7 @@ for heading in \
   '## Custom palette' \
   '## Accessibility' \
   '## Server rendering and frameworks' \
-  '## Development' \
+  '## Contributing' \
   '## Git quality gates and semantic versioning'
 do
   if grep -F "$heading" README.md >/dev/null 2>&1; then pass "README contains $heading"; else fail "README is missing $heading"; fi
@@ -49,9 +49,15 @@ for value in idle listening thinking speaking asleep; do
   if grep -F "$value" README.md >/dev/null 2>&1; then pass "README documents state $value"; else fail "README does not document state $value"; fi
 done
 
-for token in speech pt-BR en-US color-primary reduced-motion 'startTalking()' './cli/orb bootstrap' lint-staged Commitlint SemVer; do
+for token in speech pt-BR en-US color-primary reduced-motion 'startTalking()' './cli/orb bootstrap' 'pnpm run setup' 'orb check' lint-staged Commitlint SemVer; do
   if grep -F "$token" README.md >/dev/null 2>&1; then pass "README documents $token"; else fail "README does not document $token"; fi
 done
+
+if grep -E 'pnpm (orb|check|lint|typecheck|test|build|audit|version:check)' README.md >/dev/null 2>&1; then
+  fail 'README exposes redundant pnpm engineering aliases'
+else
+  pass 'README uses Orb as the engineering command surface'
+fi
 
 if [ "$failures" -ne 0 ]; then
   printf '\n%d documentation audit failure(s).\n' "$failures" >&2

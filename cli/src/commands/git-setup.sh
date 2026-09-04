@@ -2,42 +2,28 @@
 set -eu
 . "$ORB_CLI_DIR/core/common.sh"
 
-prepare=false
-while [ "$#" -gt 0 ]; do
-  case "$1" in
-    --prepare) prepare=true ;;
-    --help|-h)
-      printf 'Usage: orb git setup [--prepare]\n'
-      exit 0
-      ;;
-    *) orb_die "Unknown git setup option: $1" 2 ;;
-  esac
-  shift
-done
-
-if [ "$prepare" = true ] && { orb_ci_enabled || [ "${HUSKY:-1}" = 0 ]; }; then
-  printf 'Orb Git setup skipped for this lifecycle environment.\n'
-  exit 0
-fi
+case "${1:-}" in
+  --help|-h)
+    [ "$#" -eq 1 ] || orb_die 'Git setup help does not accept additional arguments.' 2
+    printf 'Usage: orb git setup\n'
+    exit 0
+    ;;
+  '') ;;
+  *) orb_die "Unknown git setup option: $1" 2 ;;
+esac
 
 orb_need git
-if ! orb_git_checkout; then
-  if [ "$prepare" = true ]; then
-    printf 'Orb Git setup skipped: no Git checkout.\n'
-    exit 0
-  fi
-  orb_die 'Git setup must run inside the Orbz checkout.'
-fi
+orb_git_checkout || orb_die 'Git setup must run inside the Orbz checkout.'
 
 mkdir -p "$ORB_PROJECT_ROOT/.husky"
-cat >"$ORB_PROJECT_ROOT/.husky/pre-commit" <<'EOF'
+cat >"$ORB_PROJECT_ROOT/.husky/pre-commit" <<'HOOK'
 #!/bin/sh
 exec ./cli/orb git pre-commit "$@"
-EOF
-cat >"$ORB_PROJECT_ROOT/.husky/commit-msg" <<'EOF'
+HOOK
+cat >"$ORB_PROJECT_ROOT/.husky/commit-msg" <<'HOOK'
 #!/bin/sh
 exec ./cli/orb git commit-message "$@"
-EOF
+HOOK
 chmod 755 "$ORB_PROJECT_ROOT/.husky/pre-commit" "$ORB_PROJECT_ROOT/.husky/commit-msg"
 
 orb_need pnpm

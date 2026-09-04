@@ -25,7 +25,7 @@ This repository owns only the `@neongate-ai/orbz` npm package.
 - Do not add runtime framework wrappers.
 - Keep provider secrets and product conversation copy outside the package.
 - Treat public API additions as compatibility commitments.
-- Run `pnpm check` before completing a release-oriented change.
+- Run `./cli/orb check` before completing a release-oriented change.
 
 ## Harness, CLI, and Git gates
 
@@ -40,6 +40,7 @@ This repository owns only the `@neongate-ai/orbz` npm package.
 
 ## Neon CLI
 
-The Neon CLI is an engineering harness dependency only. Run `pnpm neon` after
-dependency installation when the repository harness needs reconciliation. Do not
-run Neon setup automatically from install, build, test, or CI lifecycle hooks.
+The Neon CLI is an engineering harness dependency only. Run `./cli/orb harness`
+after dependency installation when the repository harness needs reconciliation.
+Do not run Neon setup automatically from install, build, test, or CI lifecycle
+hooks.

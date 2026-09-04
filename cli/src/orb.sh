@@ -59,8 +59,26 @@ case "$orb_command" in
   cleanup|clean)
     exec "$CLI_DIR/commands/cleanup.sh" "$@"
     ;;
+  lint)
+    exec "$CLI_DIR/commands/lint.sh" "$@"
+    ;;
+  typecheck)
+    exec "$CLI_DIR/commands/typecheck.sh" "$@"
+    ;;
+  test)
+    exec "$CLI_DIR/commands/test.sh" "$@"
+    ;;
+  build)
+    exec "$CLI_DIR/commands/build.sh" "$@"
+    ;;
+  harness|neon)
+    exec "$CLI_DIR/commands/harness.sh" "$@"
+    ;;
   audit)
     exec "$CLI_DIR/commands/audit.sh" "$@"
+    ;;
+  check)
+    exec "$CLI_DIR/commands/check.sh" "$@"
     ;;
   git)
     orb_subcommand=${1:-}
@@ -72,13 +90,14 @@ case "$orb_command" in
       doctor) exec "$CLI_DIR/commands/git-doctor.sh" "$@" ;;
       pre-commit) exec "$CLI_DIR/commands/git-pre-commit.sh" "$@" ;;
       commit-message|commit-msg) exec "$CLI_DIR/commands/git-commit-msg.sh" "$@" ;;
+      commits) exec "$CLI_DIR/commands/git-commits.sh" "$@" ;;
       commit)
         [ "${1:-}" = message ] || orb_usage_error 'Usage: orb git commit message <message-file>'
         shift
         exec "$CLI_DIR/commands/git-commit-msg.sh" "$@"
         ;;
       version-check) exec "$CLI_DIR/commands/git-version-check.sh" "$@" ;;
-      *) orb_usage_error 'Usage: orb git <setup|doctor|pre-commit|commit-message|version-check>' ;;
+      *) orb_usage_error 'Usage: orb git <setup|doctor|pre-commit|commit-message|commits|version-check>' ;;
     esac
     ;;
   --*) orb_usage_error "Unknown option: $orb_command" ;;

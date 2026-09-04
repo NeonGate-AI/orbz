@@ -36,18 +36,18 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Inspect engineering environment
-        run: pnpm orb doctor --ci
+        run: ./cli/orb doctor --ci
 
       - name: Lint pull request commits
         if: github.event_name == 'pull_request'
-        run: pnpm exec commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}" --verbose
+        run: ./cli/orb git commits --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}"
 
       - name: Lint pushed commit
         if: github.event_name == 'push'
-        run: pnpm exec commitlint --last --verbose
+        run: ./cli/orb git commits --last
 
       - name: Check package
-        run: pnpm check
+        run: ./cli/orb check
 
       - name: Verify npm payload
         run: npm pack --dry-run

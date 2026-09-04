@@ -9,12 +9,15 @@ Commit messages follow Conventional Commits. Release planning maps `fix` and
 to major changes. `package.json#version` must be canonical SemVer. A staged
 version change must move forward relative to `HEAD`.
 
-A release-oriented change runs `pnpm check`; CI also lints commit history and
-runs `npm pack --dry-run`. New exports, attributes, properties, methods, events,
-and entry points are compatibility commitments and require an explicit SPEC plus
-an ADR when the commitment is architectural.
+A release-oriented change runs `./cli/orb check`; CI also delegates environment,
+commit-history, and quality checks to Orb before running `npm pack --dry-run`.
+New exports, attributes, properties, methods, events, and entry points are
+compatibility commitments and require an explicit SPEC plus an ADR when the
+commitment is architectural.
 
 Orb and Neon are engineering-only tools. Orb is implemented with POSIX shell and
-is not exposed through the npm `bin` field. The `prepare` lifecycle may activate
-Husky in a Git checkout; it must not alter package runtime behavior or publish
-engineering files.
+is not exposed through the npm `bin` field. `pnpm run setup` is the only
+user-facing package script. The `prepack` lifecycle is a publication safety
+adapter that delegates to `./cli/orb check`; it must not duplicate the gate or
+publish engineering files. Git hooks are configured explicitly by `orb
+bootstrap` or `orb git setup`, never by an install lifecycle.

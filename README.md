@@ -1,16 +1,16 @@
-# Orbz
+# Orbz&nbsp;<img src="./assets/images/neongate-sphere.png" alt="" width="44" height="44" align="middle">
 
 One native voice-presence component for every web stack.
-
-<p align="center">
-  <img src="./assets/images/readme-banner.png" alt="Orbz voice presence component" width="100%">
-</p>
 
 `@neongate-ai/orbz` is a framework-agnostic, SSR-safe Web Component for giving
 AI voice interfaces a visible state, motion system, configurable palette, and
 provider-neutral speech boundary. The package renders the native `<orb-z>`
 element; it does not ship a framework wrapper, application, persona, transcript,
 or backend.
+
+<p align="center">
+  <img src="./assets/images/readme-banner.png" alt="Orbz voice presence component" width="100%">
+</p>
 
 - [Documentation](https://orbz.site)
 - [npm package](https://www.npmjs.com/package/@neongate-ai/orbz)
@@ -288,51 +288,59 @@ layout.
 
 ## Contributing
 
-The repository requires Node.js 24 and pnpm 10.32.1. Bootstrap a checkout with
-the POSIX shell Orb CLI:
+The repository requires Node.js 24 and pnpm 10.32.1. Bootstrap a fresh checkout
+with the checked-in POSIX shell CLI:
 
 ```bash
 ./cli/orb bootstrap
 ```
 
-The equivalent manual flow is:
+For a manual installation, install dependencies, expose the optional launcher,
+and configure Git hooks:
 
 ```bash
 pnpm install --no-frozen-lockfile
-./cli/orb setup
-./cli/orb git setup
-./cli/orb doctor
-pnpm check
+pnpm run setup
+orb git setup
+orb doctor
 ```
 
-Core Orb commands are available through the local file, the package script, or
-the optional user-scoped launcher:
+`pnpm run setup` is the only user-facing package script. All engineering work is
+owned by the Orb CLI:
 
 ```bash
-./cli/orb help
-pnpm orb audit
+orb lint
+orb typecheck
+orb test
+orb test --coverage
+orb build
+orb audit
+orb check
 orb cleanup
 ```
 
-The CLI includes `bootstrap`, `setup`, `doctor`, `cleanup`, `audit`, and Git
-subcommands for setup, diagnosis, pre-commit, commit-message, and semantic
-version checks. Its implementation is shell-only and is not published through
-the npm `bin` field.
+The repository keeps a `prepack` lifecycle only as a safety adapter. It calls
+`./cli/orb check`, so `npm pack` and publication validate the same CLI-owned gate
+without depending on a duplicate package-script alias.
+
+The CLI is shell-only and is not published through the npm `bin` field. Run
+`./cli/orb help` for the complete command surface. Its ORB terminal wordmark uses
+ANSI neon cyan, blue, and magenta; set `NO_COLOR=1` for plain output.
 
 ## Git quality gates and semantic versioning
 
 Run the Git setup after installing dependencies:
 
 ```bash
-./cli/orb git setup
-./cli/orb git doctor
+orb git setup
+orb git doctor
 ```
 
 Husky wires two thin shell adapters:
 
-- `pre-commit` runs `orb git version-check --staged`, then lint-staged. Staged
-  TypeScript, JavaScript, JSON, and CSS receive Biome checks; shell files receive
-  `/bin/sh -n` syntax validation.
+- `pre-commit` runs `orb git version-check --staged`, then `orb lint --staged`.
+  The latter delegates to lint-staged. Staged TypeScript, JavaScript, JSON, and
+  CSS receive Biome checks; shell files receive `/bin/sh -n` syntax validation.
 - `commit-msg` runs Commitlint with `@commitlint/config-conventional`.
 
 Commit headers follow Conventional Commits, for example:
@@ -350,14 +358,15 @@ planning follows semantic versioning: `fix` and `perf` normally imply a patch,
 that does not move forward:
 
 ```bash
-pnpm version:check
-./cli/orb git version-check --staged
+orb git version-check
+orb git version-check --staged
 ```
 
-`pnpm check` runs Biome, source and colocated-test type checks, Vitest, both
-builds, the SemVer check, and all versioned audits. CI also validates commit
-messages and inspects the npm payload with `npm pack --dry-run`. Tests live next
-to the source they verify; shared test setup and fixtures remain under `test/`.
-Only `dist/` is intentional package payload.
+`orb check` runs Biome, source and colocated-test type checks, Vitest, both
+builds, the SemVer check, and every versioned audit. CI invokes Orb directly,
+validates commit messages through Orb, and inspects the npm payload with
+`npm pack --dry-run`. Tests live next to the source they verify; shared test
+setup and fixtures remain under `test/`. Only `dist/` is intentional package
+payload.
 
 MIT © NeonGate AI

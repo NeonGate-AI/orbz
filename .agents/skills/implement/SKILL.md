@@ -5,7 +5,7 @@
 3. Implement through the narrowest existing layer: pure core, port, adapter, service, factory, or entry point.
 4. Preserve SSR safety and isolate registration side effects.
 5. Update types, exports, README, harness records, and audits together when their contracts change.
-6. Run focused tests, then `pnpm check`.
+6. Run focused tests, then `./cli/orb check`.
 7. Inspect `npm pack --dry-run` for release-oriented changes.
 
 Do not create framework wrappers or access the closed shadow tree from tests.

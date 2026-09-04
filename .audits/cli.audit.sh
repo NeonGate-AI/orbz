@@ -19,12 +19,19 @@ for path in \
   cli/src/commands/setup.sh \
   cli/src/commands/doctor.sh \
   cli/src/commands/cleanup.sh \
+  cli/src/commands/lint.sh \
+  cli/src/commands/typecheck.sh \
+  cli/src/commands/test.sh \
+  cli/src/commands/build.sh \
+  cli/src/commands/harness.sh \
   cli/src/commands/audit.sh \
+  cli/src/commands/check.sh \
   cli/src/commands/help.sh \
   cli/src/commands/git-setup.sh \
   cli/src/commands/git-doctor.sh \
   cli/src/commands/git-pre-commit.sh \
   cli/src/commands/git-commit-msg.sh \
+  cli/src/commands/git-commits.sh \
   cli/src/commands/git-version-check.sh
 do
   if [ -f "$path" ]; then pass "$path"; else fail "missing $path"; fi
@@ -75,27 +82,57 @@ else
   pass 'CLI scope is specific to the Orbz library'
 fi
 
-for command in bootstrap setup doctor cleanup audit help 'git setup' 'git doctor' 'git pre-commit' 'git commit-message' 'git version-check'; do
-  if TERM=dumb ./cli/orb help | grep -F "$command" >/dev/null 2>&1; then
+for command in bootstrap setup doctor cleanup lint typecheck test build harness audit check help \
+  'git setup' 'git doctor' 'git pre-commit' 'git commit-message' 'git commits' 'git version-check'
+do
+  if TERM=dumb NO_COLOR=1 ./cli/orb help | grep -F "$command" >/dev/null 2>&1; then
     pass "help documents $command"
   else
     fail "help does not document $command"
   fi
 done
 
+for route in lint typecheck test build harness audit check; do
+  if grep -F "commands/$route.sh" cli/src/orb.sh >/dev/null 2>&1; then
+    pass "orb routes $route through a command module"
+  else
+    fail "orb does not route $route through a command module"
+  fi
+done
+
 node <<'NODE' || failures=$((failures + 1))
 const fs = require('node:fs')
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
-if (pkg.scripts?.orb !== './cli/orb') {
-  console.error('FAIL  package script orb must delegate to ./cli/orb')
+const expected = {
+  setup: './cli/orb setup',
+  prepack: './cli/orb check'
+}
+const actualKeys = Object.keys(pkg.scripts ?? {}).sort()
+const expectedKeys = Object.keys(expected).sort()
+if (JSON.stringify(actualKeys) !== JSON.stringify(expectedKeys)) {
+  console.error(`FAIL  package scripts must be exactly ${expectedKeys.join(', ')}; found ${actualKeys.join(', ')}`)
   process.exit(1)
 }
-if (Object.values(pkg.scripts ?? {}).some((value) => /cli\/.*\.mjs|node .*cli\//.test(value))) {
+for (const [name, value] of Object.entries(expected)) {
+  if (pkg.scripts[name] !== value) {
+    console.error(`FAIL  ${name} must delegate to ${value}`)
+    process.exit(1)
+  }
+}
+if (Object.values(pkg.scripts).some((value) => /cli\/.*\.mjs|node .*cli\//.test(value))) {
   console.error('FAIL  package scripts retain a Node/MJS CLI runner')
   process.exit(1)
 }
-console.log('PASS  package scripts delegate to the shell CLI')
+console.log('PASS  package scripts expose only setup plus the prepack Orb adapter')
 NODE
+
+if grep -R -n -E 'pnpm (orb|check|lint|typecheck|test|build|audit|version:check)' \
+  README.md AGENTS.md cli .agents/context .agents/rules .agents/skills \
+  .agents/specs/workflow.md .github package.json >/dev/null 2>&1; then
+  fail 'active documentation or automation still exposes redundant pnpm command aliases'
+else
+  pass 'active command documentation uses Orb directly'
+fi
 
 if grep -F '# managed-by: orbz-orb' cli/src/commands/setup.sh >/dev/null 2>&1; then
   pass 'launcher uses the Orbz-managed marker'
@@ -107,6 +144,20 @@ if grep -F '.agents' cli/src/commands/cleanup.sh >/dev/null 2>&1 && grep -F '.au
   pass 'cleanup protects harness directories'
 else
   fail 'cleanup does not explicitly protect harness directories'
+fi
+
+if grep -F 'ORB_COLOR_CYAN' cli/src/core/output.sh >/dev/null 2>&1 && \
+   grep -F 'ORB_COLOR_BLUE' cli/src/core/output.sh >/dev/null 2>&1 && \
+   grep -F 'ORB_COLOR_MAGENTA' cli/src/core/output.sh >/dev/null 2>&1; then
+  pass 'terminal ORB logo defines neon cyan, blue, and magenta'
+else
+  fail 'terminal ORB logo does not define the neon palette'
+fi
+
+if NO_COLOR=1 ./cli/orb help | LC_ALL=C grep "$(printf '\033')" >/dev/null 2>&1; then
+  fail 'NO_COLOR output still contains ANSI escapes'
+else
+  pass 'NO_COLOR disables terminal color escapes'
 fi
 
 if [ "$failures" -ne 0 ]; then

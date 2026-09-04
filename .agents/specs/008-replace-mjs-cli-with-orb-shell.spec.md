@@ -1,6 +1,6 @@
 # SPEC-008: Replace the MJS engineering CLI with Orb shell commands
 
-- Status: Implemented
+- Status: Implemented; command surface extended by SPEC-012
 - Created: 2026-09-04
 - Updated: 2026-09-04
 - Mode: Current implementation
@@ -38,4 +38,5 @@ Orbz operations with POSIX shell, and update package scripts and documentation.
 
 - ADR-0007
 - Rule 008
+- SPEC-012
 - Supersedes SPEC-003

@@ -12,7 +12,7 @@ Read the relevant SPEC, ADR-0001, ADR-0003, and Rule 004.
 4. Check `system`, `always`, and `never` reduced-motion modes.
 5. Ensure state meaning is not communicated only through palette or animation.
 6. Add public-contract tests; use a real browser for accessibility-tree or focus claims.
-7. Run `pnpm check` and record evidence in the SPEC.
+7. Run `./cli/orb check` and record evidence in the SPEC.
 
 ## Stop conditions
 

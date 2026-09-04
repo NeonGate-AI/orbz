@@ -32,27 +32,31 @@ for (const entry of ['.', './browser', './react-types', './standalone', './index
   else fail(`missing export ${entry}`)
 }
 
-for (const script of ['audit', 'bootstrap', 'build', 'check', 'clean', 'commitlint', 'doctor', 'orb', 'git:doctor', 'git:setup', 'lint', 'lint:staged', 'prepare', 'test', 'test:coverage', 'test:watch', 'typecheck', 'version:check']) {
-  if (pkg.scripts?.[script]) pass(`script ${script}`)
-  else fail(`missing script ${script}`)
+const expectedScripts = {
+  setup: './cli/orb setup',
+  prepack: './cli/orb check'
+}
+const actualScriptNames = Object.keys(pkg.scripts ?? {}).sort()
+const expectedScriptNames = Object.keys(expectedScripts).sort()
+if (JSON.stringify(actualScriptNames) === JSON.stringify(expectedScriptNames)) {
+  pass('package scripts are limited to setup and prepack')
+} else {
+  fail(`package scripts must be exactly ${expectedScriptNames.join(', ')}; found ${actualScriptNames.join(', ')}`)
+}
+for (const [name, command] of Object.entries(expectedScripts)) {
+  if (pkg.scripts?.[name] === command) pass(`${name} delegates to ${command}`)
+  else fail(`${name} must delegate to ${command}`)
 }
 
-if (pkg.scripts?.orb === './cli/orb' && pkg.scripts?.audit === './cli/orb audit' && pkg.scripts?.clean === './cli/orb cleanup') {
-  pass('engineering scripts delegate to Orb shell')
-} else {
-  fail('engineering scripts must delegate to Orb shell')
-}
+const forbiddenScripts = ['orb', 'audit', 'bootstrap', 'build', 'check', 'clean', 'commitlint', 'doctor', 'git:doctor', 'git:setup', 'lint', 'lint:staged', 'prepare', 'test', 'test:coverage', 'test:watch', 'typecheck', 'version:check']
+const presentForbidden = forbiddenScripts.filter((name) => name in (pkg.scripts ?? {}))
+if (presentForbidden.length === 0) pass('redundant package command aliases are absent')
+else fail(`redundant package command aliases remain: ${presentForbidden.join(', ')}`)
 
 if (Object.values(pkg.scripts ?? {}).some((value) => /cli\/.*\.mjs|node .*cli\//.test(value))) {
   fail('package scripts retain a Node/MJS CLI runner')
 } else {
   pass('package scripts contain no Node/MJS CLI runner')
-}
-
-if (pkg.scripts?.check?.includes('pnpm test') && pkg.scripts.check.includes('pnpm version:check') && pkg.scripts.check.includes('pnpm audit')) {
-  pass('check includes tests, SemVer, and audits')
-} else {
-  fail('check must include tests, SemVer, and audits')
 }
 
 const expectedDependencies = {
@@ -102,6 +106,7 @@ done
 
 if grep -F 'orb git pre-commit' .husky/pre-commit >/dev/null 2>&1; then printf 'PASS  pre-commit delegates to Orb\n'; else printf 'FAIL  pre-commit must delegate to Orb\n' >&2; exit 1; fi
 if grep -F 'orb git commit-message' .husky/commit-msg >/dev/null 2>&1; then printf 'PASS  commit-msg delegates to Orb\n'; else printf 'FAIL  commit-msg must delegate to Orb\n' >&2; exit 1; fi
+if grep -F 'commands/lint.sh" --staged' cli/src/commands/git-pre-commit.sh >/dev/null 2>&1; then printf 'PASS  pre-commit staged lint is owned by Orb\n'; else printf 'FAIL  pre-commit must delegate staged lint to Orb\n' >&2; exit 1; fi
 
 for config in tsdown.config.ts tsdown.standalone.config.ts; do
   if grep -E 'sourcemap:[[:space:]]*false' "$config" >/dev/null 2>&1; then

@@ -1,6 +1,6 @@
 {
   "name": "@neongate-ai/orbz",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A framework-agnostic, customizable AI voice orb built as a strict, SSR-safe web component.",
   "type": "module",
   "license": "MIT",
@@ -39,15 +39,8 @@
     "custom-elements"
   ],
   "scripts": {
-    "orb": "./cli/orb",
-    "lint": "biome lint .",
-    "lint:staged": "lint-staged",
-    "prepare": "./cli/orb git setup --prepare",
-    "prepack": "pnpm check",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
+    "setup": "./cli/orb setup",
+    "prepack": "./cli/orb check"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.11",

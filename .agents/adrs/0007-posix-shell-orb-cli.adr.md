@@ -1,6 +1,6 @@
 # ADR-0007: Implement the Orb engineering CLI with POSIX shell
 
-- Status: Accepted
+- Status: Accepted; command-surface scope extended by ADR-0010
 - Created: 2026-09-04
 - Updated: 2026-09-04
 - Mode: Current decision
@@ -34,6 +34,7 @@ Shell portability becomes an enforced contract. Application runtime, deployment,
 
 ## Related records
 
-- SPEC-008
+- SPEC-008 and SPEC-012
 - Rule 008
+- ADR-0010 extends the command-surface decision
 - Supersedes the CLI implementation portion of ADR-0005

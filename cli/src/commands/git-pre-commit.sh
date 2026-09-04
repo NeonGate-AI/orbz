@@ -18,4 +18,4 @@ orb_git_checkout || orb_die 'Git pre-commit must run inside the Orbz checkout.'
 
 cd "$ORB_PROJECT_ROOT"
 "$ORB_CLI_DIR/commands/git-version-check.sh" --staged
-exec pnpm exec lint-staged --relative
+exec "$ORB_CLI_DIR/commands/lint.sh" --staged

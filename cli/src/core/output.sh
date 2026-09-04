@@ -7,10 +7,12 @@ orb_stdout_is_tty() {
 }
 
 if [ "${NO_COLOR+x}" != x ] && { [ "${ORB_FORCE_COLOR:-0}" = 1 ] || orb_stdout_is_tty; }; then
-  ORB_COLOR_YELLOW=$(printf '\033[33m')
-  ORB_COLOR_GREEN=$(printf '\033[32m')
-  ORB_COLOR_RED=$(printf '\033[31m')
-  ORB_COLOR_CYAN=$(printf '\033[36m')
+  ORB_COLOR_YELLOW=$(printf '\033[93m')
+  ORB_COLOR_GREEN=$(printf '\033[92m')
+  ORB_COLOR_RED=$(printf '\033[91m')
+  ORB_COLOR_CYAN=$(printf '\033[96m')
+  ORB_COLOR_BLUE=$(printf '\033[94m')
+  ORB_COLOR_MAGENTA=$(printf '\033[95m')
   ORB_COLOR_DIM=$(printf '\033[2m')
   ORB_COLOR_RESET=$(printf '\033[0m')
 else
@@ -18,6 +20,8 @@ else
   ORB_COLOR_GREEN=
   ORB_COLOR_RED=
   ORB_COLOR_CYAN=
+  ORB_COLOR_BLUE=
+  ORB_COLOR_MAGENTA=
   ORB_COLOR_DIM=
   ORB_COLOR_RESET=
 fi
@@ -29,12 +33,12 @@ ORB_ICON_INFO='INFO'
 
 orb_print_logo() {
   printf '%s\n' \
-    "${ORB_COLOR_CYAN} ██████╗ ██████╗ ██████╗ " \
-    "██╔═══██╗██╔══██╗██╔══██╗" \
-    "██║   ██║██████╔╝██████╔╝" \
-    "██║   ██║██╔══██╗██╔══██╗" \
-    "╚██████╔╝██║  ██║██████╔╝" \
-    " ╚═════╝ ╚═╝  ╚═╝╚═════╝ ${ORB_COLOR_RESET}"
+    "${ORB_COLOR_CYAN} ██████╗ ██████╗ ██████╗ ${ORB_COLOR_RESET}" \
+    "${ORB_COLOR_BLUE}██╔═══██╗██╔══██╗██╔══██╗${ORB_COLOR_RESET}" \
+    "${ORB_COLOR_MAGENTA}██║   ██║██████╔╝██████╔╝${ORB_COLOR_RESET}" \
+    "${ORB_COLOR_MAGENTA}██║   ██║██╔══██╗██╔══██╗${ORB_COLOR_RESET}" \
+    "${ORB_COLOR_BLUE}╚██████╔╝██║  ██║██████╔╝${ORB_COLOR_RESET}" \
+    "${ORB_COLOR_CYAN} ╚═════╝ ╚═╝  ╚═╝╚═════╝ ${ORB_COLOR_RESET}"
 }
 
 orb_print_success() {

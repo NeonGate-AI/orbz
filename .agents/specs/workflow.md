@@ -6,7 +6,7 @@
 4. Define public behavior and negative cases, including SSR, accessibility, localization, and speech where relevant.
 5. Implement the smallest coherent change.
 6. Add tests and audits as evidence rather than relying on prose alone.
-7. Run `pnpm check` and inspect the package payload.
+7. Run `./cli/orb check` and inspect the package payload.
 8. Mark the SPEC `Implemented` only when every acceptance criterion has evidence.
 
 Retrospective records must say so explicitly. They document recovered intent and

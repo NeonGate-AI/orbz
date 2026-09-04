@@ -11,7 +11,7 @@ and the evidence used to maintain the package.
 3. Find the relevant specification in [`specs/`](./specs/).
 4. Read linked decisions in [`adrs/`](./adrs/) and constraints in [`rules/`](./rules/).
 5. Use a procedure from [`skills/`](./skills/) when it matches the task.
-6. Run `pnpm check`, which includes tests, builds, SemVer validation, and audits.
+6. Run `./cli/orb check`, which includes tests, builds, SemVer validation, and audits.
 
 ## Record types
 
