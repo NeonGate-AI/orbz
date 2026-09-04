@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.tgz
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.DS_Store
+.vercel/
+doctor.config.json
+coverage/
+.vitest/
+
+.husky/_/

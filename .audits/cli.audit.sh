@@ -1,0 +1,189 @@
+#!/bin/sh
+set -eu
+
+ROOT=$(CDPATH= cd "$(dirname "$0")/.." && pwd)
+cd "$ROOT"
+
+failures=0
+pass() { printf 'PASS  %s\n' "$1"; }
+fail() { printf 'FAIL  %s\n' "$1" >&2; failures=$((failures + 1)); }
+
+for path in \
+  cli/orb \
+  cli/readme.md \
+  cli/src/orb.sh \
+  cli/src/core/common.sh \
+  cli/src/core/output.sh \
+  cli/src/core/shell-syntax.sh \
+  cli/src/commands/bootstrap.sh \
+  cli/src/commands/setup.sh \
+  cli/src/commands/setup-launcher.sh \
+  cli/src/commands/setup-project.sh \
+  cli/src/commands/doctor.sh \
+  cli/src/commands/cleanup.sh \
+  cli/src/commands/lint.sh \
+  cli/src/commands/typecheck.sh \
+  cli/src/commands/test.sh \
+  cli/src/commands/build.sh \
+  cli/src/commands/audit.sh \
+  cli/src/commands/check.sh \
+  cli/src/commands/help.sh \
+  cli/src/commands/git-setup.sh \
+  cli/src/commands/git-doctor.sh \
+  cli/src/commands/git-pre-commit.sh \
+  cli/src/commands/git-commit-msg.sh \
+  cli/src/commands/git-lint.sh \
+  cli/src/commands/git-version-check.sh
+do
+  if [ -f "$path" ]; then pass "$path"; else fail "missing $path"; fi
+done
+
+for executable in cli/orb cli/src/orb.sh cli/src/commands/*.sh cli/src/core/shell-syntax.sh; do
+  if [ -x "$executable" ]; then pass "$executable is executable"; else fail "$executable is not executable"; fi
+done
+
+shell_failures=0
+for shell_file in cli/orb cli/src/*.sh cli/src/core/*.sh cli/src/commands/*.sh; do
+  if ! /bin/sh -n "$shell_file"; then
+    printf 'FAIL  invalid shell syntax: %s\n' "$shell_file" >&2
+    shell_failures=$((shell_failures + 1))
+  fi
+done
+if [ "$shell_failures" -eq 0 ]; then pass 'all Orb shell files pass /bin/sh -n'; else failures=$((failures + shell_failures)); fi
+
+if find cli -type f \( -name '*.mjs' -o -name '*.js' -o -name '*.ts' \) -print | grep . >/dev/null 2>&1; then
+  fail 'CLI contains a non-shell implementation file'
+else
+  pass 'CLI implementation is shell-only'
+fi
+
+legacy_cli_name=$(printf '%s%s' 'e' 'lo')
+legacy_cli_title=$(printf '%s%s' 'E' 'lo')
+legacy_cli_upper=$(printf '%s%s' 'E' 'LO')
+
+if [ -e "cli/$legacy_cli_name" ] || [ -e "cli/src/$legacy_cli_name.sh" ]; then
+  fail 'legacy CLI entry points remain in cli/'
+else
+  pass 'legacy CLI entry points are absent'
+fi
+
+legacy_cli_pattern="(^|[^[:alnum:]_])${legacy_cli_title}([^[:alnum:]_]|$)|(^|[^[:alnum:]_])${legacy_cli_name}([^[:alnum:]_]|$)|${legacy_cli_upper}_|${legacy_cli_name}_"
+if find cli .agents .audits .husky .github README.md AGENTS.md package.json .lintstagedrc.json \
+  -type f ! -path '.audits/cli.audit.sh' \
+  -exec grep -n -E "$legacy_cli_pattern" {} + \
+  >/dev/null 2>&1; then
+  fail 'legacy CLI naming remains in the active repository surface'
+else
+  pass 'CLI naming is consistently Orb'
+fi
+
+if grep -R -n -i -E 'k8s|container orchestrator|workspace task graph|product changelog|environment template' cli >/dev/null 2>&1; then
+  fail 'CLI retains unrelated application or infrastructure behavior'
+else
+  pass 'CLI scope is specific to the Orbz library'
+fi
+
+for command in bootstrap setup doctor cleanup lint typecheck test build audit check help 'git setup' 'git doctor' 'git pre-commit' 'git commit-message' 'git lint' 'git version-check'; do
+  if TERM=dumb ./cli/orb help | grep -F "$command" >/dev/null 2>&1; then
+    pass "help documents $command"
+  else
+    fail "help does not document $command"
+  fi
+done
+
+node <<'NODE' || failures=$((failures + 1))
+const fs = require('node:fs')
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+const scripts = pkg.scripts ?? {}
+const expected = ['prepack', 'setup']
+const actual = Object.keys(scripts).sort()
+if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+  console.error(`FAIL  package scripts must be exactly ${expected.join(', ')}; found ${actual.join(', ')}`)
+  process.exit(1)
+}
+if (scripts.setup !== './cli/orb setup --launcher') {
+  console.error('FAIL  setup script must delegate to Orb launcher setup')
+  process.exit(1)
+}
+if (scripts.prepack !== './cli/orb check') {
+  console.error('FAIL  prepack must delegate to Orb check')
+  process.exit(1)
+}
+if (pkg.bin?.orb !== './cli/orb' || Object.keys(pkg.bin).length !== 1) {
+  console.error('FAIL  package must expose exactly one orb binary')
+  process.exit(1)
+}
+console.log('PASS  package scripts are minimal and Orb is the single binary')
+NODE
+
+if grep -F '# managed-by: orbz-orb' cli/src/commands/setup-launcher.sh >/dev/null 2>&1; then
+  pass 'launcher uses the Orbz-managed marker'
+else
+  fail 'launcher marker is not Orbz-specific'
+fi
+
+if grep -F '.agents' cli/src/commands/cleanup.sh >/dev/null 2>&1 && grep -F '.audits' cli/src/commands/cleanup.sh >/dev/null 2>&1; then
+  pass 'cleanup protects harness directories'
+else
+  fail 'cleanup does not explicitly protect harness directories'
+fi
+
+if grep -F "ORB_COLOR_NEON_CYAN" cli/src/core/output.sh >/dev/null 2>&1 && \
+   grep -F "ORB_COLOR_NEON_MAGENTA" cli/src/core/output.sh >/dev/null 2>&1 && \
+   grep -F "ORB_COLOR_NEON_BLUE" cli/src/core/output.sh >/dev/null 2>&1; then
+  pass 'terminal ORB logo defines neon cyan, magenta, and blue colors'
+else
+  fail 'terminal ORB logo is missing neon color channels'
+fi
+
+orb_tmp=${TMPDIR:-/tmp}/orb-cli-audit.$$
+trap 'rm -rf "$orb_tmp"' 0 1 2 15
+mkdir -p "$orb_tmp/bin" "$orb_tmp/package/cli" "$orb_tmp/project"
+ln -s "$ROOT/cli/orb" "$orb_tmp/bin/orb"
+if "$orb_tmp/bin/orb" --version | grep -Fx "orb $(node -p "require('./package.json').version")" >/dev/null 2>&1; then
+  pass 'package-manager style symlink resolves the real CLI location'
+else
+  fail 'CLI entry point fails through a symlink'
+fi
+
+cp package.json "$orb_tmp/package/package.json"
+cp -R cli "$orb_tmp/package/"
+cat > "$orb_tmp/project/package.json" <<'JSON'
+{
+  "name": "orb-consumer-audit",
+  "private": true,
+  "packageManager": "pnpm@10.32.1"
+}
+JSON
+if (cd "$orb_tmp/project" && "$orb_tmp/package/cli/orb" --dry-run) | grep -F 'pnpm add @neongate-ai/orbz@' >/dev/null 2>&1; then
+  pass 'published CLI routes directly to project setup and detects pnpm'
+else
+  fail 'published CLI does not select project setup correctly'
+fi
+
+cat > "$orb_tmp/project/package.json" <<'JSON'
+{
+  "name": "orb-consumer-audit",
+  "private": true,
+  "dependencies": {
+    "@neongate-ai/orbz": "^0.4.0"
+  }
+}
+JSON
+before=$(find "$orb_tmp/project" -type f -exec basename {} \; | LC_ALL=C sort)
+if (cd "$orb_tmp/project" && "$orb_tmp/package/cli/orb") >/dev/null 2>&1; then
+  after=$(find "$orb_tmp/project" -type f -exec basename {} \; | LC_ALL=C sort)
+  if [ "$before" = "$after" ]; then
+    pass 'default published setup is idempotent and creates no source files'
+  else
+    fail 'default published setup created unexpected project files'
+  fi
+else
+  fail 'default published setup fails for an existing dependency'
+fi
+
+if [ "$failures" -ne 0 ]; then
+  printf '\n%d CLI audit failure(s).\n' "$failures" >&2
+  exit 1
+fi
+printf '\nCLI audit passed.\n'

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Inspect engineering environment
+        run: ./cli/orb doctor --ci
+
+      - name: Lint pull request commits
+        if: github.event_name == 'pull_request'
+        run: ./cli/orb git lint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}"
+
+      - name: Lint pushed commit
+        if: github.event_name == 'push'
+        run: ./cli/orb git lint --last
+
+      - name: Lint
+        run: ./cli/orb lint
+
+      - name: Typecheck
+        run: ./cli/orb typecheck
+
+      - name: Test
+        run: ./cli/orb test
+
+      - name: Build
+        run: ./cli/orb build
+
+      - name: Validate package version
+        run: ./cli/orb git version-check
+
+      - name: Run repository audits
+        run: ./cli/orb audit
+
+      - name: Verify npm payload and prepack gate
+        run: npm pack --dry-run

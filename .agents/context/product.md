@@ -1,0 +1,21 @@
+# Product context
+
+Orbz is the `@neongate-ai/orbz` package: a framework-agnostic, SSR-safe visual
+presence for AI voice experiences. It exposes one native custom element,
+`<orb-z>`, plus typed ports and optional speech adapters.
+
+## Product boundary
+
+The repository owns a library, not an application, documentation site, example
+suite, backend, or framework wrapper. Consumers own page layout, transcripts,
+conversation copy, authentication, provider credentials, and intelligence.
+
+## Public experience
+
+The orb represents states through motion and appearance. Consumers can select a
+preset or an explicit five-color palette, set size and speed, respect reduced
+motion preferences, and connect speech through an adapter.
+
+The package does not ship a persona or product-specific greeting. Silence is the
+default. A consumer supplies `speech` and explicitly calls `startTalking()` for
+a direct utterance, or deliberately configures a custom talk flow.

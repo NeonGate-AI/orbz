@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": false,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "paths": {
+      "@core/*": ["./src/core/*"],
+      "@element/*": ["./src/element/*"],
+      "@factories/*": ["./src/factories/*"],
+      "@orbz": ["./src/index.ts"],
+      "@ports/*": ["./src/ports/*"],
+      "@services/*": ["./src/services/*"],
+      "@talk/*": ["./src/talk/*"]
+    },
+    "rootDir": "src",
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2022",
+    "types": []
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+ORB_INVOCATION_DIR=$(pwd -P)
+export ORB_INVOCATION_DIR
+
+orb_source=$0
+while [ -L "$orb_source" ]; do
+  orb_source_dir=$(CDPATH= cd -P "$(dirname "$orb_source")" && pwd)
+  orb_link=$(readlink "$orb_source")
+  case "$orb_link" in
+    /*) orb_source=$orb_link ;;
+    *) orb_source=$orb_source_dir/$orb_link ;;
+  esac
+done
+
+CLI_ROOT=$(CDPATH= cd -P "$(dirname "$orb_source")" && pwd)
+exec "$CLI_ROOT/src/orb.sh" "$@"
