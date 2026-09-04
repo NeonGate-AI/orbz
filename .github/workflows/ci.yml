@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -32,6 +34,17 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: Inspect engineering environment
+        run: pnpm orb doctor --ci
+
+      - name: Lint pull request commits
+        if: github.event_name == 'pull_request'
+        run: pnpm exec commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}" --verbose
+
+      - name: Lint pushed commit
+        if: github.event_name == 'push'
+        run: pnpm exec commitlint --last --verbose
 
       - name: Check package
         run: pnpm check

@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+CLI_ROOT=$(CDPATH= cd -P "$(dirname "$0")" && pwd)
+exec "$CLI_ROOT/src/orb.sh" "$@"

@@ -8,3 +8,7 @@ dist/
 .DS_Store
 .vercel/
 doctor.config.json
+coverage/
+.vitest/
+
+.husky/_/

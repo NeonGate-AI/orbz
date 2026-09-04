@@ -6,6 +6,7 @@ export const ORBZ_OBSERVED_ATTRIBUTES = Object.freeze([
   'state',
   'size',
   'speed',
+  'speech',
   'paused',
   'elevated',
   'preset',

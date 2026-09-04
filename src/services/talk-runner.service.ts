@@ -12,6 +12,7 @@ export class OrbzTalkRunnerService {
   #intelligence: OrbzIntelligencePort | undefined
   #position = 0
   #run = 0
+  #speaking = false
   #speech = 0
   readonly #onError: TalkErrorHandler
   readonly #onSpeakingChange: SpeakingChangeHandler
@@ -43,13 +44,23 @@ export class OrbzTalkRunnerService {
     this.#voiceEngine = value
   }
 
-  async start(flow: readonly OrbzTalkStep[]): Promise<void> {
-    if (!this.#voiceEngine) {
-      const error = createVoiceEngineNotConfiguredError()
-      this.#onError(error)
-      throw error
+  async speak(text: string): Promise<void> {
+    const normalizedText = text.trim()
+    if (normalizedText.length === 0) {
+      return
     }
 
+    this.#assertVoiceEngine()
+    this.stop()
+    await this.#speak(normalizedText, this.#run)
+  }
+
+  async start(flow: readonly OrbzTalkStep[]): Promise<void> {
+    if (flow.length === 0) {
+      return
+    }
+
+    this.#assertVoiceEngine()
     this.stop()
     this.#context = {}
     this.#flow = [...flow]
@@ -86,7 +97,17 @@ export class OrbzTalkRunnerService {
     this.#run += 1
     this.#speech += 1
     this.#voiceEngine?.stop()
-    this.#onSpeakingChange(false)
+    this.#setSpeaking(false)
+  }
+
+  #assertVoiceEngine(): void {
+    if (this.#voiceEngine) {
+      return
+    }
+
+    const error = createVoiceEngineNotConfiguredError()
+    this.#onError(error)
+    throw error
   }
 
   async #advance(run: number): Promise<void> {
@@ -144,7 +165,7 @@ export class OrbzTalkRunnerService {
 
     const speech = ++this.#speech
     voiceEngine.stop()
-    this.#onSpeakingChange(true)
+    this.#setSpeaking(true)
 
     try {
       await voiceEngine.speak(text)
@@ -154,9 +175,18 @@ export class OrbzTalkRunnerService {
       return false
     } finally {
       if (run === this.#run && speech === this.#speech) {
-        this.#onSpeakingChange(false)
+        this.#setSpeaking(false)
       }
     }
+  }
+
+  #setSpeaking(speaking: boolean): void {
+    if (this.#speaking === speaking) {
+      return
+    }
+
+    this.#speaking = speaking
+    this.#onSpeakingChange(speaking)
   }
 }
 

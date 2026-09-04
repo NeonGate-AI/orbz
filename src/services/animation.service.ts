@@ -1,11 +1,11 @@
-import { ORBZ_MOTION_BY_STATE, REDUCED_ORBZ_MOTION_BY_STATE } from '@core/motion.data'
+import { ORBZ_MOTION_BY_STATE, REDUCED_ORBZ_MOTION_BY_STATE } from '@core/motion/motion.data'
 import type {
   OrbzAnimationScalar,
   OrbzAnimationSeries,
   OrbzAnimationValues,
   OrbzLayerMotion,
   OrbzTransition
-} from '@core/motion.types'
+} from '@core/motion/motion.types'
 import type { OrbzAnimationLayers, OrbzAnimationSettings } from '@element/element.types'
 
 const ANIMATED_STYLE_PROPERTIES = [

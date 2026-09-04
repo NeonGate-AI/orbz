@@ -5,19 +5,19 @@ import type {
   OrbzReducedMotion,
   OrbzSize,
   OrbzState
-} from '@core/appearance.types'
+} from '@core/appearance/appearance.types'
+import { mergeOrbzColors } from '@core/appearance/merge-colors.compute'
 import {
   DEFAULT_ORBZ_REDUCED_MOTION,
   ORBZ_COLOR_ATTRIBUTES,
   ORBZ_COLOR_KEYS,
   ORBZ_PRESETS
 } from '@core/config.data'
-import { mergeOrbzColors } from '@core/merge-colors.compute'
-import { normalizeOrbzPreset } from '@core/normalize-preset.compute'
-import { normalizeOrbzReducedMotion } from '@core/normalize-reduced-motion.compute'
-import { normalizeOrbzSize } from '@core/normalize-size.compute'
-import { normalizeOrbzSpeed } from '@core/normalize-speed.compute'
-import { normalizeOrbzState } from '@core/normalize-state.compute'
+import { normalizeOrbzPreset } from '@core/lib/normalize-preset.compute'
+import { normalizeOrbzReducedMotion } from '@core/lib/normalize-reduced-motion.compute'
+import { normalizeOrbzSize } from '@core/lib/normalize-size.compute'
+import { normalizeOrbzSpeed } from '@core/lib/normalize-speed.compute'
+import { normalizeOrbzState } from '@core/lib/normalize-state.compute'
 import { ORBZ_OBSERVED_ATTRIBUTES } from '@element/element.data'
 import type { OrbzElement, OrbzElementConstructor } from '@element/element.types'
 import { orbzShadowTreeFactory } from '@factories/shadow-tree.factory'
@@ -102,8 +102,8 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
 
     set talkFlow(value: readonly OrbzTalkStep[] | undefined) {
       const flow = value ?? DEFAULT_TALK_FLOW
-      if (!Array.isArray(flow) || flow.length === 0) {
-        throw new TypeError('Orbz talkFlow must contain at least one step.')
+      if (!Array.isArray(flow)) {
+        throw new TypeError('Orbz talkFlow must be an array of talk steps.')
       }
 
       this.#talkFlow = [...flow]
@@ -169,6 +169,20 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
 
     set size(value: OrbzSize) {
       this.setAttribute('size', normalizeOrbzSize(value))
+    }
+
+    get speech(): string | undefined {
+      return normalizeSpeech(this.getAttribute('speech'))
+    }
+
+    set speech(value: string | null | undefined) {
+      const normalized = normalizeSpeech(value)
+      if (normalized === undefined) {
+        this.removeAttribute('speech')
+        return
+      }
+
+      this.setAttribute('speech', normalized)
     }
 
     get speed(): number {
@@ -246,6 +260,20 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
         return
       }
 
+      if (name === 'speech') {
+        const normalized = normalizeSpeech(newValue)
+        if (normalized === undefined) {
+          if (newValue !== null) {
+            this.removeAttribute(name)
+          }
+          return
+        }
+        if (newValue !== normalized) {
+          this.setAttribute(name, normalized)
+        }
+        return
+      }
+
       if (name === 'state' && newValue !== null) {
         const normalized = normalizeOrbzState(newValue)
         if (newValue !== normalized) {
@@ -315,7 +343,16 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
     startTalking(): Promise<void> {
       this.#activationAbortController?.abort()
       this.#activationAbortController = undefined
-      return this.#talkRunner.start(this.#talkFlow)
+
+      const speech = this.speech
+      if (speech !== undefined) {
+        return this.#talkRunner.speak(speech)
+      }
+      if (this.#talkFlow.length > 0) {
+        return this.#talkRunner.start(this.#talkFlow)
+      }
+
+      return Promise.resolve()
     }
 
     stopTalking(): void {
@@ -536,6 +573,11 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
   ELEMENT_CONSTRUCTORS.set(HTMLElementBase, elementConstructor)
 
   return elementConstructor
+}
+
+function normalizeSpeech(value: string | null | undefined): string | undefined {
+  const normalized = value?.trim()
+  return normalized && normalized.length > 0 ? normalized : undefined
 }
 
 function colorKeyForAttribute(name: string): keyof OrbzColors | undefined {

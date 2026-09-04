@@ -1,4 +1,9 @@
-import type { OrbzPresetName, OrbzReducedMotion, OrbzSize, OrbzState } from '@core/appearance.types'
+import type {
+  OrbzPresetName,
+  OrbzReducedMotion,
+  OrbzSize,
+  OrbzState
+} from '@core/appearance/appearance.types'
 import type { OrbzIntelligencePort } from '@ports/intelligence.port'
 import type { OrbzVoiceEnginePort } from '@ports/voice-engine.port'
 import type { OrbzTalkContext, OrbzTalkStep } from '@talk/talk.types'
@@ -27,6 +32,7 @@ export interface OrbzShadowTree {
 export interface OrbzVoiceOptions {
   intelligence?: OrbzIntelligencePort
   talkFlow?: readonly OrbzTalkStep[]
+  speech?: string
   voiceEngine?: OrbzVoiceEnginePort
 }
 
@@ -38,6 +44,8 @@ export interface OrbzElement extends HTMLElement {
   set preset(value: OrbzPresetName | null | undefined)
   reducedMotion: OrbzReducedMotion
   size: OrbzSize
+  get speech(): string | undefined
+  set speech(value: string | null | undefined)
   speed: number
   state: OrbzState
   readonly talkContext: Readonly<OrbzTalkContext>

@@ -1,7 +1,11 @@
-import type { DetailedHTMLProps, HTMLAttributes } from 'react'
-
-import type { OrbzPresetName, OrbzReducedMotion, OrbzSize, OrbzState } from '@core/appearance.types'
+import type {
+  OrbzPresetName,
+  OrbzReducedMotion,
+  OrbzSize,
+  OrbzState
+} from '@core/appearance/appearance.types'
 import type { OrbzElement } from '@element/element.types'
+import type { DetailedHTMLProps, HTMLAttributes } from 'react'
 
 export interface OrbzReactAttributes {
   'color-accent'?: string
@@ -16,6 +20,7 @@ export interface OrbzReactAttributes {
   preset?: OrbzPresetName
   'reduced-motion'?: OrbzReducedMotion
   size?: OrbzSize
+  speech?: string
   speed?: number | string
   state?: OrbzState
 }

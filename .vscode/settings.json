@@ -1,25 +1,31 @@
 {
+  "css.lint.emptyRules": "ignore",
+  "css.lint.unknownAtRules": "ignore",
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
   "explorer.compactFolders": false,
   "explorer.confirmDelete": false,
-  "editor.tabSize": 2,
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "biomejs.biome",
-  "editor.codeActionsOnSave": {
-    "source.fixAll.biome": "always",
-    "source.organizeImports": "never"
+  "flow-icons.files.associations": {
+    "*.adr.md": "coding-guidelines",
+    "*.audit.sh": "license",
+    "*.rule.md": "bbx",
+    "*.spec.md": "plist"
   },
-  "biome.lspBinPath": "${workspaceFolder}/node_modules/.bin/biome",
-  "[typescript]": {
-    "editor.defaultFormatter": "biomejs.biome"
+  "flow-icons.folders.associations": {
+    ".agents": "robot",
+    ".audits": "benchmark",
+    "adrs": "scripts",
+    "appearance": "crush",
+    "context": "gitbook",
+    "motion": "shader",
+    "prompts": "prompts",
+    "rules": "rules",
+    "skills": "skills",
+    "specs": "tasks",
+    "talk": "mic"
   },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "biomejs.biome"
-  },
-  "css.lint.unknownAtRules": "ignore",
-  "scss.lint.unknownAtRules": "ignore",
-  "less.lint.unknownAtRules": "ignore",
-  "git.ignoreLimitWarning": true
+  "git.ignoreLimitWarning": true,
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single"
 }

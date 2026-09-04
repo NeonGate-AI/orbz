@@ -6,7 +6,7 @@ import {
   DEFAULT_ORBZ_STATE,
   ORBZ_COLOR_KEYS
 } from '@core/config.data'
-import { ORBZ_APPEARANCE_BY_STATE } from '@core/motion.data'
+import { ORBZ_APPEARANCE_BY_STATE } from '@core/motion/motion.data'
 import type { OrbzAnimationLayers, OrbzShadowTree } from '@element/element.types'
 
 export function orbzShadowTreeFactory(shadowRoot: ShadowRoot, document: Document): OrbzShadowTree {

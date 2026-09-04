@@ -12,8 +12,8 @@ interface ActiveAudio {
 }
 
 const DEFAULT_INSTRUCTIONS =
-  'Speak in fluent American English with a warm, natural, happy, excited conversational ' +
-  'delivery. Keep the pacing calm and avoid exaggerated prosody.'
+  'Fale em português do Brasil com dicção natural, ritmo calmo e entonação conversacional. ' +
+  'Não traduza nomes próprios nem invente conteúdo além do texto recebido.'
 const DEFAULT_MODEL = 'gpt-4o-mini-tts'
 const DEFAULT_RESPONSE_FORMAT = 'mp3'
 const DEFAULT_VOICE = 'marin'
@@ -198,7 +198,5 @@ function supportsInstructions(model: OpenAISpeechModel): boolean {
 }
 
 function defaultVoiceForModel(model: OpenAISpeechModel): OpenAISpeechVoice {
-  return model === 'tts-1' || model === 'tts-1-hd'
-    ? 'alloy'
-    : DEFAULT_VOICE
+  return model === 'tts-1' || model === 'tts-1-hd' ? 'alloy' : DEFAULT_VOICE
 }

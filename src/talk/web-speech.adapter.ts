@@ -1,22 +1,19 @@
 import type { OrbzVoiceEnginePort } from '@ports/voice-engine.port'
 
+import { DEFAULT_SPEECH_LANGUAGE } from './talk.data'
 import type { WebSpeechAdapterOptions } from './talk.types'
 
 interface ActiveSpeech {
   cancel(): void
 }
 
-const DEFAULT_LANGUAGE = 'en-US'
 const DEFAULT_PREFERRED_VOICES = Object.freeze([
-  'Google US English',
-  'Microsoft Aria Online',
-  'Microsoft Jenny Online',
-  'Microsoft Ava Online',
-  'Microsoft Guy Online',
-  'Microsoft Zira',
-  'English United States',
-  'English (America)',
-  'US English'
+  'Google português do Brasil',
+  'Microsoft Francisca Online',
+  'Microsoft Antonio Online',
+  'Português Brasil',
+  'Luciana',
+  'Felipe'
 ])
 const DEFAULT_VOICE_LOAD_TIMEOUT = 1_500
 const SPEECH_START_TIMEOUT = 5_000
@@ -37,10 +34,7 @@ export class WebSpeechAdapter implements OrbzVoiceEnginePort {
       ...(options.preferredVoices ?? DEFAULT_PREFERRED_VOICES)
     ])
     this.#rate = clamp(options.rate ?? 1, 0.1, 10)
-    this.#voiceLoadTimeoutMs = Math.max(
-      0,
-      options.voiceLoadTimeoutMs ?? DEFAULT_VOICE_LOAD_TIMEOUT
-    )
+    this.#voiceLoadTimeoutMs = Math.max(0, options.voiceLoadTimeoutMs ?? DEFAULT_VOICE_LOAD_TIMEOUT)
     this.#volume = clamp(options.volume ?? 1, 0, 1)
   }
 
@@ -61,11 +55,7 @@ export class WebSpeechAdapter implements OrbzVoiceEnginePort {
 
     const voices = await loadVoices(synthesis, this.#voiceLoadTimeoutMs)
     const utterance = new Utterance(normalizedText)
-    const voice = selectVoice(
-      voices,
-      this.#language,
-      this.#preferredVoices
-    )
+    const voice = selectVoice(voices, this.#language, this.#preferredVoices)
 
     utterance.lang = this.#language
     utterance.pitch = this.#pitch
@@ -230,7 +220,7 @@ function scoreVoice(
 
 function normalizeLanguage(value: string | undefined): string {
   const normalized = value?.trim()
-  return normalized && normalized.length > 0 ? normalized : DEFAULT_LANGUAGE
+  return normalized && normalized.length > 0 ? normalized : DEFAULT_SPEECH_LANGUAGE
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -255,8 +245,6 @@ function createSpeechStartError(): Error {
       ? 'Speech playback requires a user interaction in this browser.'
       : 'Speech synthesis did not start.'
   )
-  error.name = requiresActivation
-    ? 'NotAllowedError'
-    : 'SpeechSynthesisStartError'
+  error.name = requiresActivation ? 'NotAllowedError' : 'SpeechSynthesisStartError'
   return error
 }

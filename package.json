@@ -39,17 +39,30 @@
     "custom-elements"
   ],
   "scripts": {
-    "build": "tsdown && tsdown --config tsdown.standalone.config.ts",
-    "check": "biome lint . && tsc --noEmit && pnpm build",
-    "neon": "neon",
-    "prepack": "pnpm check"
+    "orb": "./cli/orb",
+    "lint": "biome lint .",
+    "lint:staged": "lint-staged",
+    "prepare": "./cli/orb git setup --prepare",
+    "prepack": "pnpm check",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.11",
+    "@commitlint/cli": "21.2.2",
+    "@commitlint/config-conventional": "21.2.2",
     "@neongate-ai/neon": "0.1.0",
     "@types/react": "19.2.18",
+    "@vitest/coverage-v8": "4.1.11",
+    "happy-dom": "20.14.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.4.1",
+    "semver": "7.8.5",
     "tsdown": "0.22.14",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
   },
   "exports": {
     ".": {
