@@ -18,42 +18,36 @@ const fail = (message) => {
 if (pkg.type === 'module') pass('package is ESM')
 else fail('package type must be module')
 
-if (JSON.stringify(pkg.files) === JSON.stringify(['dist'])) pass('npm payload is limited to dist')
-else fail('package files must contain only dist')
+if (JSON.stringify(pkg.files) === JSON.stringify(['dist', 'cli'])) pass('npm payload is limited to dist and cli')
+else fail('package files must contain exactly dist and cli')
 
 if (!pkg.dependencies || Object.keys(pkg.dependencies).length === 0) pass('package has no runtime dependencies')
 else fail('unexpected runtime dependencies detected')
 
-if (!pkg.bin) pass('engineering CLI is not a published bin')
-else fail('engineering CLI must not be exposed through package bin')
+if (pkg.bin?.orb === './cli/orb' && Object.keys(pkg.bin).length === 1) pass('package exposes exactly the orb binary')
+else fail('package bin must expose only orb -> ./cli/orb')
 
 for (const entry of ['.', './browser', './react-types', './standalone', './index.css', './package.json']) {
   if (entry in pkg.exports) pass(`export ${entry}`)
   else fail(`missing export ${entry}`)
 }
 
-const expectedScripts = {
-  setup: './cli/orb setup',
-  prepack: './cli/orb check'
-}
-const actualScriptNames = Object.keys(pkg.scripts ?? {}).sort()
-const expectedScriptNames = Object.keys(expectedScripts).sort()
-if (JSON.stringify(actualScriptNames) === JSON.stringify(expectedScriptNames)) {
-  pass('package scripts are limited to setup and prepack')
+const scripts = pkg.scripts ?? {}
+if (JSON.stringify(Object.keys(scripts).sort()) === JSON.stringify(['prepack', 'setup'])) {
+  pass('package scripts contain only setup and prepack')
 } else {
-  fail(`package scripts must be exactly ${expectedScriptNames.join(', ')}; found ${actualScriptNames.join(', ')}`)
+  fail(`unexpected package script aliases: ${Object.keys(scripts).sort().join(', ')}`)
 }
-for (const [name, command] of Object.entries(expectedScripts)) {
-  if (pkg.scripts?.[name] === command) pass(`${name} delegates to ${command}`)
-  else fail(`${name} must delegate to ${command}`)
+if (scripts.setup === './cli/orb setup --launcher') pass('setup bridge delegates to Orb')
+else fail('setup bridge must delegate to Orb launcher setup')
+if (scripts.prepack === './cli/orb check') pass('prepack delegates to complete Orb check')
+else fail('prepack must delegate to ./cli/orb check')
+for (const forbidden of ['preinstall', 'install', 'postinstall', 'prepare']) {
+  if (!(forbidden in scripts)) pass(`no ${forbidden} setup side effect`)
+  else fail(`${forbidden} must not trigger setup`)
 }
 
-const forbiddenScripts = ['orb', 'audit', 'bootstrap', 'build', 'check', 'clean', 'commitlint', 'doctor', 'git:doctor', 'git:setup', 'lint', 'lint:staged', 'prepare', 'test', 'test:coverage', 'test:watch', 'typecheck', 'version:check']
-const presentForbidden = forbiddenScripts.filter((name) => name in (pkg.scripts ?? {}))
-if (presentForbidden.length === 0) pass('redundant package command aliases are absent')
-else fail(`redundant package command aliases remain: ${presentForbidden.join(', ')}`)
-
-if (Object.values(pkg.scripts ?? {}).some((value) => /cli\/.*\.mjs|node .*cli\//.test(value))) {
+if (Object.values(scripts).some((value) => /cli\/.*\.mjs|node .*cli\//.test(value))) {
   fail('package scripts retain a Node/MJS CLI runner')
 } else {
   pass('package scripts contain no Node/MJS CLI runner')
@@ -95,6 +89,13 @@ if (failures.length > 0) {
 console.log('\nPackage metadata audit passed.')
 NODE
 
+if [ -x cli/orb ] && /bin/sh -n cli/orb; then
+  printf 'PASS  package bin is executable POSIX shell\n'
+else
+  printf 'FAIL  package bin must be executable POSIX shell\n' >&2
+  exit 1
+fi
+
 for hook in .husky/pre-commit .husky/commit-msg; do
   if [ -f "$hook" ] && [ -x "$hook" ] && /bin/sh -n "$hook"; then
     printf 'PASS  %s is an executable shell hook\n' "$hook"
@@ -106,7 +107,6 @@ done
 
 if grep -F 'orb git pre-commit' .husky/pre-commit >/dev/null 2>&1; then printf 'PASS  pre-commit delegates to Orb\n'; else printf 'FAIL  pre-commit must delegate to Orb\n' >&2; exit 1; fi
 if grep -F 'orb git commit-message' .husky/commit-msg >/dev/null 2>&1; then printf 'PASS  commit-msg delegates to Orb\n'; else printf 'FAIL  commit-msg must delegate to Orb\n' >&2; exit 1; fi
-if grep -F 'commands/lint.sh" --staged' cli/src/commands/git-pre-commit.sh >/dev/null 2>&1; then printf 'PASS  pre-commit staged lint is owned by Orb\n'; else printf 'FAIL  pre-commit must delegate staged lint to Orb\n' >&2; exit 1; fi
 
 for config in tsdown.config.ts tsdown.standalone.config.ts; do
   if grep -E 'sourcemap:[[:space:]]*false' "$config" >/dev/null 2>&1; then

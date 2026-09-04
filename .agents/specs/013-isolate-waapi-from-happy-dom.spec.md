@@ -7,6 +7,12 @@ date: 2026-09-04
 
 # SPEC-013: Isolate WAAPI from Happy DOM
 
+- Status: Implemented
+- Created: 2026-09-04
+- Updated: 2026-09-04
+- Mode: Current implementation
+- Owner: Orbz maintainers
+
 ## Problem
 
 Happy DOM 20.14.0 implements `Element.animate()`, but its `Animation.cancel()`

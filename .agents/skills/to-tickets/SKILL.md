@@ -1,6 +1,6 @@
 ---
 name: to-tickets
-description: Decompose one ready Amarelo spec into vertical GitHub issues with explicit blocking edges.
+description: Decompose one ready Orbz spec into vertical GitHub issues with explicit blocking edges.
 disable-model-invocation: true
 ---
 

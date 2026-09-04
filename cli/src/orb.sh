@@ -15,16 +15,28 @@ orb_usage_error() {
   exit 2
 }
 
-orb_command=${1:-help}
-if [ "$#" -gt 0 ]; then
+orb_default_command() {
+  if orb_is_repository_source; then
+    printf 'help\n'
+  else
+    printf 'setup\n'
+  fi
+}
+
+if [ "$#" -eq 0 ]; then
+  orb_command=$(orb_default_command)
+else
+  orb_command=$1
   shift
 fi
 
 if [ "$orb_command" = --logs ]; then
   ORB_LOGS=true
   export ORB_LOGS
-  orb_command=${1:-help}
-  if [ "$#" -gt 0 ]; then
+  if [ "$#" -eq 0 ]; then
+    orb_command=$(orb_default_command)
+  else
+    orb_command=$1
     shift
   fi
 fi
@@ -47,40 +59,55 @@ case "$orb_command" in
     [ -n "$orb_version" ] || orb_die 'Unable to read the Orbz version.'
     printf 'orb %s\n' "$orb_version"
     ;;
-  bootstrap|install)
-    exec "$CLI_DIR/commands/bootstrap.sh" "$@"
-    ;;
   setup)
     exec "$CLI_DIR/commands/setup.sh" "$@"
     ;;
+  --project|--package-manager|--package-spec|--force|--dry-run)
+    orb_is_repository_source && orb_usage_error "Unknown option: $orb_command"
+    exec "$CLI_DIR/commands/setup.sh" "$orb_command" "$@"
+    ;;
+  bootstrap)
+    orb_require_repository_source
+    exec "$CLI_DIR/commands/bootstrap.sh" "$@"
+    ;;
   doctor)
+    orb_require_repository_source
     exec "$CLI_DIR/commands/doctor.sh" "$@"
     ;;
   cleanup|clean)
+    orb_require_repository_source
     exec "$CLI_DIR/commands/cleanup.sh" "$@"
     ;;
   lint)
+    orb_require_repository_source
     exec "$CLI_DIR/commands/lint.sh" "$@"
     ;;
   typecheck)
+    orb_require_repository_source
     exec "$CLI_DIR/commands/typecheck.sh" "$@"
     ;;
   test)
+    orb_require_repository_source
     exec "$CLI_DIR/commands/test.sh" "$@"
     ;;
   build)
+    orb_require_repository_source
     exec "$CLI_DIR/commands/build.sh" "$@"
     ;;
   harness|neon)
+    orb_require_repository_source
     exec "$CLI_DIR/commands/harness.sh" "$@"
     ;;
   audit)
+    orb_require_repository_source
     exec "$CLI_DIR/commands/audit.sh" "$@"
     ;;
   check)
+    orb_require_repository_source
     exec "$CLI_DIR/commands/check.sh" "$@"
     ;;
   git)
+    orb_require_repository_source
     orb_subcommand=${1:-}
     if [ "$#" -gt 0 ]; then
       shift
@@ -90,6 +117,7 @@ case "$orb_command" in
       doctor) exec "$CLI_DIR/commands/git-doctor.sh" "$@" ;;
       pre-commit) exec "$CLI_DIR/commands/git-pre-commit.sh" "$@" ;;
       commit-message|commit-msg) exec "$CLI_DIR/commands/git-commit-msg.sh" "$@" ;;
+      lint) exec "$CLI_DIR/commands/git-lint.sh" "$@" ;;
       commits) exec "$CLI_DIR/commands/git-commits.sh" "$@" ;;
       commit)
         [ "${1:-}" = message ] || orb_usage_error 'Usage: orb git commit message <message-file>'
@@ -97,7 +125,7 @@ case "$orb_command" in
         exec "$CLI_DIR/commands/git-commit-msg.sh" "$@"
         ;;
       version-check) exec "$CLI_DIR/commands/git-version-check.sh" "$@" ;;
-      *) orb_usage_error 'Usage: orb git <setup|doctor|pre-commit|commit-message|commits|version-check>' ;;
+      *) orb_usage_error 'Usage: orb git <setup|doctor|pre-commit|commit-message|lint|commits|version-check>' ;;
     esac
     ;;
   --*) orb_usage_error "Unknown option: $orb_command" ;;

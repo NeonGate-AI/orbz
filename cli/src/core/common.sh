@@ -2,6 +2,7 @@
 
 : "${ORB_PROJECT_ROOT:?ORB_PROJECT_ROOT must be set by cli/src/orb.sh}"
 : "${ORB_CLI_DIR:?ORB_CLI_DIR must be set by cli/src/orb.sh}"
+: "${ORB_INVOCATION_DIR:=$(pwd -P)}"
 
 . "$ORB_CLI_DIR/core/output.sh"
 
@@ -79,6 +80,18 @@ NODE
 
 orb_git_checkout() {
   git -C "$ORB_PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1
+}
+
+orb_is_repository_source() {
+  [ -d "$ORB_PROJECT_ROOT/.agents" ] &&
+    [ -d "$ORB_PROJECT_ROOT/.audits" ] &&
+    [ -d "$ORB_PROJECT_ROOT/src" ] &&
+    [ -f "$ORB_PROJECT_ROOT/tsdown.config.ts" ]
+}
+
+orb_require_repository_source() {
+  orb_is_repository_source ||
+    orb_die 'This command is available only from an Orbz source checkout.' 2
 }
 
 orb_default_bin_dir() {

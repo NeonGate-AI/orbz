@@ -5,7 +5,32 @@ set -eu
 [ "$#" -eq 0 ] || orb_die 'Help does not accept arguments.' 2
 
 orb_print_logo
-cat <<'EOF_HELP'
+
+if ! orb_is_repository_source; then
+  cat <<'EOF_PUBLIC'
+Orbz project installer
+
+Usage:
+  npx -y @neongate-ai/orbz@latest
+  orb setup [options]
+
+Options:
+  --project <directory>                 Target project; defaults to the current directory
+  --package-manager <npm|pnpm|yarn|bun> Override package-manager detection
+  --package-spec <specifier>            Override the Orbz package/version to install
+  --force                               Reinstall even when Orbz is already declared
+  --dry-run                             Print the installation command without executing it
+  --help, -h                            Show this guide
+  --version, -V                         Print the executing Orbz version
+
+The default command is setup. It adds @neongate-ai/orbz to an existing project
+and prints the framework-neutral registration snippet. It does not generate or
+overwrite application source files.
+EOF_PUBLIC
+  exit 0
+fi
+
+cat <<'EOF_REPOSITORY'
 Orbz repository engineering CLI
 
 Usage:
@@ -16,23 +41,24 @@ Commands:
   help                                  Show this guide
   --version                             Print the local Orbz/Orb version
   bootstrap                             Install dependencies and configure the checkout
-  setup [--bin-dir <directory>]         Install the user-scoped orb launcher
+  setup --launcher [--bin-dir <dir>]    Install the user-scoped orb launcher
   doctor [--ci]                         Diagnose the Orbz engineering environment
   cleanup [--dependencies]              Remove generated output
   lint [--write|--staged]               Run Biome or staged-file checks
-  typecheck                             Type-check package source and colocated tests
-  test [--coverage|--watch] [args]      Run Vitest
-  build                                 Build package and standalone entry points
-  harness [args]                        Run the Neon engineering harness dependency
+  typecheck                             Type-check source and colocated tests
+  test [--watch|--coverage] [args]      Run Vitest
+  build                                 Build package and standalone distributions
+  harness [args]                        Run the external engineering harness tool
   audit                                 Run every versioned repository audit
-  check                                 Run lint, types, tests, builds, SemVer, and audits
-  git setup                             Install Husky hook adapters
+  check                                 Run the complete release quality gate
+  git setup [--prepare]                 Install Husky hook adapters
   git doctor [--ci]                     Diagnose Commitlint, Husky, and lint-staged
   git pre-commit                        Run staged-file and SemVer gates
   git commit-message <file>             Validate a Conventional Commit message
   git commit message <file>             Alias for git commit-message
-  git commits --last                    Validate the most recent commit
-  git commits --from <ref> --to <ref>   Validate a commit range
+  git lint --last                       Validate the latest commit
+  git lint --from <rev> --to <rev>      Validate a commit range
+  git commits --last                    Backward-compatible commit lint alias
   git version-check [--staged]          Validate package semantic versioning
 
 Global flags:
@@ -46,13 +72,9 @@ First checkout:
 Install only the user-scoped launcher:
   pnpm run setup
 
-Manual recovery:
-  pnpm install --no-frozen-lockfile
-  pnpm run setup
-  orb git setup
-  orb doctor
+Consumer installation test:
+  npx -y @neongate-ai/orbz@latest
 
-The only user-facing package script is setup. The prepack lifecycle is retained
-as a safety adapter and delegates to `./cli/orb check`. Every engineering
-operation otherwise belongs to this POSIX shell CLI.
-EOF_HELP
+Orb is implemented entirely with POSIX shell scripts. Package commands are
+owned by Orb; package.json keeps only the setup bridge and npm lifecycle gates.
+EOF_REPOSITORY

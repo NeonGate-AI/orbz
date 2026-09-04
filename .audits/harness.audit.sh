@@ -25,7 +25,7 @@ spec_count=$(find .agents/specs -type f -name '[0-9][0-9][0-9]-*.spec.md' | wc -
 rule_count=$(find .agents/rules -type f -name '[0-9][0-9][0-9]-*.rule.md' | wc -l | tr -d ' ')
 [ "$adr_count" -ge 10 ] && pass "$adr_count ADRs" || fail 'expected at least 10 Orbz ADRs'
 [ "$spec_count" -ge 12 ] && pass "$spec_count SPECs" || fail 'expected at least 12 Orbz SPECs'
-[ "$rule_count" -ge 10 ] && pass "$rule_count rules" || fail 'expected at least 10 Orbz rules'
+[ "$rule_count" -ge 11 ] && pass "$rule_count rules" || fail 'expected at least 11 Orbz rules'
 
 for record in .agents/adrs/000[1-6]-*.adr.md .agents/specs/00[1-7]-*.spec.md; do
   if grep -F 'Created: 2026-08-21' "$record" >/dev/null 2>&1 && grep -F 'Mode: Retrospective reconstruction' "$record" >/dev/null 2>&1; then
@@ -35,7 +35,7 @@ for record in .agents/adrs/000[1-6]-*.adr.md .agents/specs/00[1-7]-*.spec.md; do
   fi
 done
 
-for record in .agents/adrs/000[7-9]-*.adr.md .agents/adrs/0010-*.adr.md .agents/specs/00[8-9]-*.spec.md .agents/specs/01[0-2]-*.spec.md; do
+for record in .agents/adrs/000[7-9]-*.adr.md .agents/adrs/001[0-1]-*.adr.md .agents/specs/00[8-9]-*.spec.md .agents/specs/01[0-4]-*.spec.md; do
   if grep -F 'Created: 2026-09-04' "$record" >/dev/null 2>&1 && grep -F 'Mode: Current' "$record" >/dev/null 2>&1; then
     :
   else
@@ -60,7 +60,7 @@ fi
 
 if [ -d .audit ]; then fail 'legacy .audit directory still exists'; else pass 'audit directory is .audits'; fi
 
-for rule in 009-git-commits-and-semantic-versioning 010-colocated-tests; do
+for rule in 009-git-commits-and-semantic-versioning 010-colocated-tests 011-public-orb-installer; do
   if grep -F ".agents/rules/$rule.rule.md" AGENTS.md >/dev/null 2>&1; then pass "AGENTS reads rule $rule"; else fail "AGENTS omits rule $rule"; fi
 done
 

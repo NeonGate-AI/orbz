@@ -1,54 +1,13 @@
----
-name: code-review
-description: Review an Amarelo branch or PR against a fixed merge base on independent Standards and Spec-fidelity axes.
----
+# Orbz code review procedure
 
-# Code Review
+1. Read the changed SPEC and linked ADRs/rules.
+2. Review public API compatibility before implementation details.
+3. Check SSR imports, browser-only side effects, and custom-element registration.
+4. Check closed-shadow encapsulation, reduced motion, language, silence, and error events.
+5. Inspect cancellation and stale async work in voice or animation code.
+6. Confirm tests observe public behavior and include negative cases.
+7. Confirm exports, package payload, docs, and audits remain synchronized.
+8. Run `./cli/orb check` and report findings by severity with file and behavior evidence.
 
-Review the exact final diff without allowing code quality to mask incorrect scope or spec fidelity to mask repository violations.
-
-## 1. Pin the comparison
-
-Record the merge-base SHA, reviewed head SHA, commit list and three-dot diff. Fail early when the ref is invalid, the diff is empty or the head changes during review.
-
-## 2. Load sources
-
-For **Standards**, load `AGENTS.md`, applicable `.agents/rules/*.rule.md`, scoped context, accepted ADRs and public package boundaries.
-
-For **Spec fidelity**, load the complete originating `.spec.md`, linked tickets and acceptance evidence. When Memory Nucleus gates apply, use the designated canonical source and compare the implementation without assuming a proposal is already code.
-
-## 3. Review independently
-
-### Standards
-
-Report documented-rule violations, unsafe dependency direction, broken suffix/reference contracts, privacy or authorization regressions, unbounded complexity, duplicated ownership and misleading evidence. Distinguish hard violations from maintainability judgments.
-
-### Spec fidelity
-
-Report missing or partial requirements, incorrect behavior, unsupported checked criteria, scope creep and failure paths that contradict the contract. Each finding cites the relevant spec requirement and affected file or seam.
-
-Run the axes independently and preserve both results in the PR. One pass cannot compensate for the other.
-
-## 4. Revalidate
-
-Resolve every blocking finding. Any resulting head change invalidates both reviews and prior CI; rerun the full sequence. Review comments, PR body and evidence must name the exact final head.
-
-## Result format
-
-```markdown
-## Standards
-
-Reviewed head: `<sha>`
-Result: PASS | FAIL
-Findings: ...
-
-## Spec fidelity
-
-Reviewed head: `<sha>`
-Result: PASS | FAIL
-Findings: ...
-```
-
-## Completion criterion
-
-Both axes report PASS with zero unresolved blocking findings on the same head that has fully green CI and remains current and conflict-free with its base.
+Reject secrets, framework wrappers, implicit autoplay, mock product copy, and
+changes that bypass the package entry-point contract.

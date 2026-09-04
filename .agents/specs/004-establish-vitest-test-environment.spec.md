@@ -22,7 +22,7 @@ placement without changing this runner decision.
 - [x] DOM tests use happy-dom and SSR imports use Node.
 - [x] Test aliases match source aliases and virtual CSS is replaced by a fixture.
 - [x] Tests cover registration, closed shadow, reflection, speech silence, events, adapters, and defaults.
-- [x] `orb check` runs tests and test type checks.
+- [x] `./cli/orb check` runs tests and test type checks.
 - [x] CI executes the complete check.
 
 ## Evidence

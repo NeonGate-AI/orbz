@@ -1,6 +1,6 @@
 ---
 name: to-spec
-description: Synthesize an owner-approved repository change into the next canonical Amarelo numbered spec.
+description: Synthesize an owner-approved repository change into the next canonical Orbz numbered spec.
 disable-model-invocation: true
 ---
 

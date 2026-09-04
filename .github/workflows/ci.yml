@@ -40,11 +40,11 @@ jobs:
 
       - name: Lint pull request commits
         if: github.event_name == 'pull_request'
-        run: ./cli/orb git commits --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}"
+        run: ./cli/orb git lint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}"
 
       - name: Lint pushed commit
         if: github.event_name == 'push'
-        run: ./cli/orb git commits --last
+        run: ./cli/orb git lint --last
 
       - name: Check package
         run: ./cli/orb check

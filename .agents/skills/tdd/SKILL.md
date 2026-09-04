@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Implement one Amarelo behavior at a declared public seam through a strict red-to-green loop.
+description: Implement one Orbz behavior at a declared public seam through a strict red-to-green loop.
 ---
 
 # Test-Driven Development

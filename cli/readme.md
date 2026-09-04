@@ -1,96 +1,100 @@
 # Orb CLI for Orbz
 
-Orb is the repository-local engineering CLI for `@neongate-ai/orbz`. Every
-implementation file is POSIX shell; there is no Node/MJS command runner and no
-runtime package export.
+Orb is the POSIX shell command surface for `@neongate-ai/orbz`. It has two
+execution contexts:
+
+1. **Repository mode** operates on an Orbz source checkout.
+2. **Project setup mode** is the published npm binary used by
+   `npx @neongate-ai/orbz`.
+
+There is no Node, MJS, TypeScript, or framework-based command runner. Small
+inline Node programs are used only where reliable JSON parsing is required.
 
 ## Entry points
 
-Use the checked-in entry point on a fresh clone:
-
 ```bash
-./cli/orb help
-./cli/orb bootstrap
+./cli/orb help                    # source checkout
+orb help                          # optional user-scoped launcher
+npx -y @neongate-ai/orbz@latest  # consumer project setup
 ```
 
-Install the optional user-scoped `orb` launcher after dependencies are present:
+`cli/orb` resolves npm/pnpm symlinks before delegating to `cli/src/orb.sh`.
+Command modules live under `cli/src/commands/`; shared output and filesystem
+helpers live under `cli/src/core/`.
 
-```bash
-pnpm run setup
-orb help
-```
-
-`pnpm run setup` is the only user-facing package script. The explicit `run` is
-required because `pnpm setup` is a pnpm command of its own. All repository
-operations otherwise go through `orb` or `./cli/orb`.
-
-The `prepack` package lifecycle is retained only as a publication safety adapter;
-it delegates to `./cli/orb check` and is not an alternative command surface.
-
-## Commands
+## Repository commands
 
 | Command | Purpose |
 | --- | --- |
-| `orb bootstrap` | Install dependencies, configure hooks and the launcher, then run doctor. |
-| `orb setup` | Install a user-scoped launcher without editing shell profiles. |
+| `orb bootstrap` | Install development dependencies, configure hooks and the launcher, then run doctor. |
+| `orb setup --launcher` | Install a user-scoped launcher without editing shell profiles. |
 | `orb doctor` | Validate Node, pnpm, dependencies, configs, audits, hooks, and local setup. |
 | `orb cleanup` | Remove generated output; add `--dependencies` to remove `node_modules`. |
-| `orb lint` | Run the repository Biome linter. |
-| `orb lint --write` | Apply Biome formatting and safe lint fixes. |
-| `orb lint --staged` | Run lint-staged against the Git index. |
-| `orb typecheck` | Type-check package source and colocated test suites. |
-| `orb test` | Run Vitest once. |
-| `orb test --coverage` | Run Vitest with V8 coverage. |
-| `orb test --watch` | Run Vitest in watch mode. |
-| `orb build` | Build package entry points and the standalone browser bundle. |
-| `orb harness` | Run the Neon engineering harness dependency. |
+| `orb lint` | Run Biome across the checkout. |
+| `orb typecheck` | Type-check source and colocated tests. |
+| `orb test` | Run Vitest once; supports `--watch` and `--coverage`. |
+| `orb build` | Build the module and standalone distributions. |
+| `orb harness` | Run the external harness-score utility explicitly. |
 | `orb audit` | Run all `.audits/*.audit.sh` files through `/bin/sh`. |
-| `orb check` | Run lint, type checks, tests, builds, SemVer validation, and audits. |
+| `orb check` | Run the complete release quality gate. |
 | `orb git setup` | Write thin Husky adapters and activate the hooks path. |
 | `orb git doctor` | Validate Commitlint, lint-staged, Husky, SemVer, and hook wiring. |
-| `orb git pre-commit` | Validate staged version changes, then run staged-file checks. |
+| `orb git pre-commit` | Validate staged version changes, then run lint-staged. |
 | `orb git commit-message` | Validate one commit message using Commitlint. |
-| `orb git commits` | Validate the latest commit or an explicit commit range. |
-| `orb git version-check` | Require canonical SemVer; `--staged` rejects version regressions. |
+| `orb git lint` | Validate the latest commit or a revision range. |
+| `orb git version-check` | Require canonical, forward-only SemVer changes. |
 
 `orb git commit message <file>` and `orb git commit-msg <file>` are aliases for
 `orb git commit-message <file>`.
 
-## Complete quality gate
+## Consumer project setup
+
+The published package exposes one binary:
+
+```json
+{
+  "bin": {
+    "orb": "./cli/orb"
+  }
+}
+```
+
+Because it is the package's only binary, npm can infer it for:
 
 ```bash
-orb check
+npx -y @neongate-ai/orbz@latest
 ```
 
-The command executes the gates in this order:
+With no arguments, the published binary runs project setup. It requires an
+existing `package.json`, detects npm, pnpm, yarn, or bun, installs the executing
+Orbz version into `dependencies`, and prints the registration snippet. It does
+not create or overwrite application source files.
 
-```text
-lint -> typecheck -> test -> build -> SemVer -> audits
+Useful variants:
+
+```bash
+npx -y @neongate-ai/orbz@latest --package-manager pnpm
+npx -y @neongate-ai/orbz@latest --project ./apps/web
+npx -y @neongate-ai/orbz@latest --dry-run
 ```
 
-`npm pack` and package publication invoke the same gate through `prepack`, so a
-removed package-script alias cannot break release validation.
+## Package scripts
 
-## Git gate ownership
+Repository commands are not duplicated under `package.json#scripts`. The only
+human-facing bridge is:
 
-`.husky/pre-commit` delegates to `orb git pre-commit`. The command runs the
-staged semantic-version check before `orb lint --staged`. `.husky/commit-msg`
-delegates to Commitlint because the message file only exists at that phase.
+```bash
+pnpm run setup
+```
 
-Commit types follow Conventional Commits. In release planning, `fix` and `perf`
-imply a patch, `feat` implies a minor, and `!` or a `BREAKING CHANGE` footer
-implies a major version. Orb validates syntax and forward-only package version
-changes; release automation remains an explicit maintainer action.
-
-## Terminal logo
-
-`orb help` and `orb doctor` render the ORB wordmark using terminal characters and
-ANSI neon cyan, blue, and magenta. `NO_COLOR=1` disables color without changing
-the text output.
+The `prepack` lifecycle delegates to `./cli/orb check` so npm packing and
+publishing cannot bypass the release gate.
 
 ## Safety
 
-Orb does not publish, edit shell profiles, replace unmanaged launchers, or enter
-the package `bin` field. Cleanup is limited to generated repository state.
-Provider credentials and product conversation copy remain outside the CLI and
-package runtime.
+Orb does not edit shell profiles, overwrite unmanaged launchers, generate
+consumer source files, or publish packages. Network installation is limited to
+explicit repository bootstrap, explicit project setup, and the explicit external
+harness command.
+Cleanup is limited to generated repository state. Provider credentials and
+product conversation copy remain outside the CLI and package runtime.

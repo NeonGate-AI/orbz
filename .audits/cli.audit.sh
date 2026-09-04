@@ -17,13 +17,14 @@ for path in \
   cli/src/core/shell-syntax.sh \
   cli/src/commands/bootstrap.sh \
   cli/src/commands/setup.sh \
+  cli/src/commands/setup-launcher.sh \
+  cli/src/commands/setup-project.sh \
   cli/src/commands/doctor.sh \
   cli/src/commands/cleanup.sh \
   cli/src/commands/lint.sh \
   cli/src/commands/typecheck.sh \
   cli/src/commands/test.sh \
   cli/src/commands/build.sh \
-  cli/src/commands/harness.sh \
   cli/src/commands/audit.sh \
   cli/src/commands/check.sh \
   cli/src/commands/help.sh \
@@ -31,7 +32,7 @@ for path in \
   cli/src/commands/git-doctor.sh \
   cli/src/commands/git-pre-commit.sh \
   cli/src/commands/git-commit-msg.sh \
-  cli/src/commands/git-commits.sh \
+  cli/src/commands/git-lint.sh \
   cli/src/commands/git-version-check.sh
 do
   if [ -f "$path" ]; then pass "$path"; else fail "missing $path"; fi
@@ -82,59 +83,40 @@ else
   pass 'CLI scope is specific to the Orbz library'
 fi
 
-for command in bootstrap setup doctor cleanup lint typecheck test build harness audit check help \
-  'git setup' 'git doctor' 'git pre-commit' 'git commit-message' 'git commits' 'git version-check'
-do
-  if TERM=dumb NO_COLOR=1 ./cli/orb help | grep -F "$command" >/dev/null 2>&1; then
+for command in bootstrap setup doctor cleanup lint typecheck test build audit check help 'git setup' 'git doctor' 'git pre-commit' 'git commit-message' 'git lint' 'git version-check'; do
+  if TERM=dumb ./cli/orb help | grep -F "$command" >/dev/null 2>&1; then
     pass "help documents $command"
   else
     fail "help does not document $command"
   fi
 done
 
-for route in lint typecheck test build harness audit check; do
-  if grep -F "commands/$route.sh" cli/src/orb.sh >/dev/null 2>&1; then
-    pass "orb routes $route through a command module"
-  else
-    fail "orb does not route $route through a command module"
-  fi
-done
-
 node <<'NODE' || failures=$((failures + 1))
 const fs = require('node:fs')
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
-const expected = {
-  setup: './cli/orb setup',
-  prepack: './cli/orb check'
-}
-const actualKeys = Object.keys(pkg.scripts ?? {}).sort()
-const expectedKeys = Object.keys(expected).sort()
-if (JSON.stringify(actualKeys) !== JSON.stringify(expectedKeys)) {
-  console.error(`FAIL  package scripts must be exactly ${expectedKeys.join(', ')}; found ${actualKeys.join(', ')}`)
+const scripts = pkg.scripts ?? {}
+const expected = ['prepack', 'setup']
+const actual = Object.keys(scripts).sort()
+if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+  console.error(`FAIL  package scripts must be exactly ${expected.join(', ')}; found ${actual.join(', ')}`)
   process.exit(1)
 }
-for (const [name, value] of Object.entries(expected)) {
-  if (pkg.scripts[name] !== value) {
-    console.error(`FAIL  ${name} must delegate to ${value}`)
-    process.exit(1)
-  }
-}
-if (Object.values(pkg.scripts).some((value) => /cli\/.*\.mjs|node .*cli\//.test(value))) {
-  console.error('FAIL  package scripts retain a Node/MJS CLI runner')
+if (scripts.setup !== './cli/orb setup --launcher') {
+  console.error('FAIL  setup script must delegate to Orb launcher setup')
   process.exit(1)
 }
-console.log('PASS  package scripts expose only setup plus the prepack Orb adapter')
+if (scripts.prepack !== './cli/orb check') {
+  console.error('FAIL  prepack must delegate to Orb check')
+  process.exit(1)
+}
+if (pkg.bin?.orb !== './cli/orb' || Object.keys(pkg.bin).length !== 1) {
+  console.error('FAIL  package must expose exactly one orb binary')
+  process.exit(1)
+}
+console.log('PASS  package scripts are minimal and Orb is the single binary')
 NODE
 
-if grep -R -n -E 'pnpm (orb|check|lint|typecheck|test|build|audit|version:check)' \
-  README.md AGENTS.md cli .agents/context .agents/rules .agents/skills \
-  .agents/specs/workflow.md .github package.json >/dev/null 2>&1; then
-  fail 'active documentation or automation still exposes redundant pnpm command aliases'
-else
-  pass 'active command documentation uses Orb directly'
-fi
-
-if grep -F '# managed-by: orbz-orb' cli/src/commands/setup.sh >/dev/null 2>&1; then
+if grep -F '# managed-by: orbz-orb' cli/src/commands/setup-launcher.sh >/dev/null 2>&1; then
   pass 'launcher uses the Orbz-managed marker'
 else
   fail 'launcher marker is not Orbz-specific'
@@ -146,18 +128,58 @@ else
   fail 'cleanup does not explicitly protect harness directories'
 fi
 
-if grep -F 'ORB_COLOR_CYAN' cli/src/core/output.sh >/dev/null 2>&1 && \
-   grep -F 'ORB_COLOR_BLUE' cli/src/core/output.sh >/dev/null 2>&1 && \
-   grep -F 'ORB_COLOR_MAGENTA' cli/src/core/output.sh >/dev/null 2>&1; then
-  pass 'terminal ORB logo defines neon cyan, blue, and magenta'
+if grep -F "ORB_COLOR_NEON_CYAN" cli/src/core/output.sh >/dev/null 2>&1 && \
+   grep -F "ORB_COLOR_NEON_MAGENTA" cli/src/core/output.sh >/dev/null 2>&1 && \
+   grep -F "ORB_COLOR_NEON_BLUE" cli/src/core/output.sh >/dev/null 2>&1; then
+  pass 'terminal ORB logo defines neon cyan, magenta, and blue colors'
 else
-  fail 'terminal ORB logo does not define the neon palette'
+  fail 'terminal ORB logo is missing neon color channels'
 fi
 
-if NO_COLOR=1 ./cli/orb help | LC_ALL=C grep "$(printf '\033')" >/dev/null 2>&1; then
-  fail 'NO_COLOR output still contains ANSI escapes'
+orb_tmp=${TMPDIR:-/tmp}/orb-cli-audit.$$
+trap 'rm -rf "$orb_tmp"' 0 1 2 15
+mkdir -p "$orb_tmp/bin" "$orb_tmp/package/cli" "$orb_tmp/project"
+ln -s "$ROOT/cli/orb" "$orb_tmp/bin/orb"
+if "$orb_tmp/bin/orb" --version | grep -Fx "orb $(node -p "require('./package.json').version")" >/dev/null 2>&1; then
+  pass 'package-manager style symlink resolves the real CLI location'
 else
-  pass 'NO_COLOR disables terminal color escapes'
+  fail 'CLI entry point fails through a symlink'
+fi
+
+cp package.json "$orb_tmp/package/package.json"
+cp -R cli "$orb_tmp/package/"
+cat > "$orb_tmp/project/package.json" <<'JSON'
+{
+  "name": "orb-consumer-audit",
+  "private": true,
+  "packageManager": "pnpm@10.32.1"
+}
+JSON
+if (cd "$orb_tmp/project" && "$orb_tmp/package/cli/orb" --dry-run) | grep -F 'pnpm add @neongate-ai/orbz@' >/dev/null 2>&1; then
+  pass 'published CLI routes directly to project setup and detects pnpm'
+else
+  fail 'published CLI does not select project setup correctly'
+fi
+
+cat > "$orb_tmp/project/package.json" <<'JSON'
+{
+  "name": "orb-consumer-audit",
+  "private": true,
+  "dependencies": {
+    "@neongate-ai/orbz": "^0.4.0"
+  }
+}
+JSON
+before=$(find "$orb_tmp/project" -type f -exec basename {} \; | LC_ALL=C sort)
+if (cd "$orb_tmp/project" && "$orb_tmp/package/cli/orb") >/dev/null 2>&1; then
+  after=$(find "$orb_tmp/project" -type f -exec basename {} \; | LC_ALL=C sort)
+  if [ "$before" = "$after" ]; then
+    pass 'default published setup is idempotent and creates no source files'
+  else
+    fail 'default published setup created unexpected project files'
+  fi
+else
+  fail 'default published setup fails for an existing dependency'
 fi
 
 if [ "$failures" -ne 0 ]; then

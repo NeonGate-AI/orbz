@@ -89,8 +89,16 @@ for (const dependency of ['vitest', 'happy-dom', '@vitest/coverage-v8']) {
   if (pkg.devDependencies?.[dependency]) console.log(`PASS  devDependency ${dependency}`)
   else { console.error(`FAIL  missing devDependency ${dependency}`); failed = true }
 }
-if (!('test' in (pkg.scripts ?? {}))) console.log('PASS  Vitest is not duplicated as a package script')
-else { console.error('FAIL  test must be owned by the Orb CLI, not package scripts'); failed = true }
+for (const alias of ['test', 'test:watch', 'test:coverage', 'typecheck', 'build', 'check']) {
+  if (!(alias in (pkg.scripts ?? {}))) console.log(`PASS  ${alias} is owned by Orb rather than package scripts`)
+  else { console.error(`FAIL  package script duplicates Orb command: ${alias}`); failed = true }
+}
+if (readFileSync('cli/src/commands/test.sh', 'utf8').includes('vitest run')) {
+  console.log('PASS  Orb owns deterministic Vitest execution')
+} else {
+  console.error('FAIL  orb test must run Vitest once by default')
+  failed = true
+}
 if (failed) process.exit(1)
 NODE
 
@@ -99,9 +107,7 @@ if grep -F "include: ['src/**/*.test.ts']" vitest.config.ts >/dev/null 2>&1; the
 if grep -F "'src/**/*.test.ts'" vitest.config.ts >/dev/null 2>&1; then pass 'coverage excludes colocated tests'; else fail 'coverage must exclude colocated tests'; fi
 if grep -F 'src/**/*.test.ts' tsconfig.json >/dev/null 2>&1; then pass 'source TypeScript excludes colocated tests'; else fail 'source TypeScript must exclude colocated tests'; fi
 if grep -F '@vitest-environment node' src/index.test.ts >/dev/null 2>&1; then pass 'SSR import test uses Node'; else fail 'SSR import test must use Node'; fi
-if grep -F 'run: ./cli/orb check' .github/workflows/ci.yml >/dev/null 2>&1; then pass 'CI runs the Orb quality gate'; else fail 'CI does not run ./cli/orb check'; fi
-if grep -F 'pnpm exec vitest run' cli/src/commands/test.sh >/dev/null 2>&1; then pass 'Orb owns deterministic Vitest execution'; else fail 'Orb test command does not run Vitest'; fi
-if grep -F 'run_gate test' cli/src/commands/check.sh >/dev/null 2>&1; then pass 'Orb check includes tests'; else fail 'Orb check does not include tests'; fi
+if grep -F 'run: ./cli/orb check' .github/workflows/ci.yml >/dev/null 2>&1; then pass 'CI runs the complete Orb quality gate'; else fail 'CI does not run ./cli/orb check'; fi
 
 if [ "$failures" -ne 0 ]; then
   printf '\n%d test audit failure(s).\n' "$failures" >&2

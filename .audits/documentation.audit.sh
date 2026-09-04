@@ -49,14 +49,21 @@ for value in idle listening thinking speaking asleep; do
   if grep -F "$value" README.md >/dev/null 2>&1; then pass "README documents state $value"; else fail "README does not document state $value"; fi
 done
 
-for token in speech pt-BR en-US color-primary reduced-motion 'startTalking()' './cli/orb bootstrap' 'pnpm run setup' 'orb check' lint-staged Commitlint SemVer; do
+for token in speech pt-BR en-US color-primary reduced-motion 'startTalking()' './cli/orb bootstrap' 'orb check' 'npx -y @neongate-ai/orbz@latest' lint-staged Commitlint SemVer; do
   if grep -F "$token" README.md >/dev/null 2>&1; then pass "README documents $token"; else fail "README does not document $token"; fi
 done
 
-if grep -E 'pnpm (orb|check|lint|typecheck|test|build|audit|version:check)' README.md >/dev/null 2>&1; then
-  fail 'README exposes redundant pnpm engineering aliases'
+
+if grep -E 'pnpm (orb|check|version:check)' README.md cli/readme.md >/dev/null 2>&1; then
+  fail 'documentation retains removed package-script command aliases'
 else
-  pass 'README uses Orb as the engineering command surface'
+  pass 'documentation routes repository commands through Orb'
+fi
+
+if grep -F 'package binary' README.md >/dev/null 2>&1 && grep -F 'POSIX shell' README.md >/dev/null 2>&1; then
+  pass 'README documents the published POSIX shell binary'
+else
+  fail 'README does not document the published POSIX shell binary'
 fi
 
 if [ "$failures" -ne 0 ]; then

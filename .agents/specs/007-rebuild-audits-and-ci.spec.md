@@ -14,7 +14,7 @@ CI gate did not run behavioral tests.
 ## Scope
 
 Replace audits with Orbz-specific checks and compose linting, type checks,
-Vitest, builds, and audits under `orb check`.
+Vitest, builds, and audits under `./cli/orb check`.
 
 ## Acceptance criteria
 

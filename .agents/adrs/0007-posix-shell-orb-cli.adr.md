@@ -1,6 +1,6 @@
 # ADR-0007: Implement the Orb engineering CLI with POSIX shell
 
-- Status: Accepted; command-surface scope extended by ADR-0010
+- Status: Accepted; amended by ADR-0010 and ADR-0011
 - Created: 2026-09-04
 - Updated: 2026-09-04
 - Mode: Current decision
@@ -17,8 +17,7 @@ Use `cli/orb` and modular scripts under `cli/src/` as the only engineering CLI
 implementation. Keep the implementation POSIX shell and limit the public command
 surface to bootstrap, setup, diagnosis, cleanup, audits, and Git quality gates.
 
-The CLI may delegate to pnpm tools already declared by the repository. It is not
-an npm package binary and is never part of the runtime distribution.
+The CLI may delegate to pnpm tools already declared by the repository. ADR-0011 later publishes the same shell entry point as an explicit project installer while keeping repository-only operations guarded.
 
 ## Consequences
 
@@ -34,7 +33,6 @@ Shell portability becomes an enforced contract. Application runtime, deployment,
 
 ## Related records
 
-- SPEC-008 and SPEC-012
-- Rule 008
-- ADR-0010 extends the command-surface decision
+- SPEC-008, SPEC-012, and SPEC-014
+- Rules 008 and 011
 - Supersedes the CLI implementation portion of ADR-0005

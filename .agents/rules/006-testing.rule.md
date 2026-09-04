@@ -13,4 +13,4 @@
 6. Keep aliases in Vitest synchronized with TypeScript and build configuration.
 7. Add a real-browser check when behavior materially depends on an actual browser implementation.
 8. Executable suites are colocated under `src/` and follow Rule 010.
-9. `orb check` must include lint, source/test type checks, tests, builds, SemVer validation, and audits.
+9. `./cli/orb check` must include lint, source/test type checks, tests, builds, SemVer validation, and audits.

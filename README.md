@@ -19,7 +19,24 @@ or backend.
 
 ## Getting started
 
-Install the package:
+### One-command project setup
+
+From an existing JavaScript project, run:
+
+```bash
+npx -y @neongate-ai/orbz@latest
+```
+
+The temporary `orb` executable detects the project package manager from
+`package.json#packageManager` or its lockfile, adds the executing version of
+`@neongate-ai/orbz` to `dependencies`, and prints the registration snippet. It
+does not generate or overwrite application source files. Omit `-y` when you
+want npm to confirm the temporary CLI download.
+
+Orb is a POSIX shell CLI. Use it from Linux, macOS, WSL, or another environment
+that provides `/bin/sh`.
+
+Manual installation remains available:
 
 ```bash
 pnpm add @neongate-ai/orbz
@@ -285,28 +302,28 @@ layout.
 | `@neongate-ai/orbz/react-types` | Type-only React JSX augmentation. |
 | `@neongate-ai/orbz/standalone` | Direct-browser/CDN bundle. |
 | `@neongate-ai/orbz/index.css` | Explicit stylesheet export. |
+| `orb` package binary | POSIX shell project installer used by `npx @neongate-ai/orbz`. |
 
 ## Contributing
 
-The repository requires Node.js 24 and pnpm 10.32.1. Bootstrap a fresh checkout
-with the checked-in POSIX shell CLI:
+The repository requires Node.js 24 and pnpm 10.32.1. Bootstrap a checkout with
+the POSIX shell Orb CLI:
 
 ```bash
 ./cli/orb bootstrap
 ```
 
-For a manual installation, install dependencies, expose the optional launcher,
-and configure Git hooks:
+The equivalent manual flow is:
 
 ```bash
 pnpm install --no-frozen-lockfile
 pnpm run setup
-orb git setup
-orb doctor
+./cli/orb git setup
+./cli/orb doctor
 ```
 
-`pnpm run setup` is the only user-facing package script. All engineering work is
-owned by the Orb CLI:
+Repository operations are owned by Orb rather than duplicated as package
+scripts:
 
 ```bash
 orb lint
@@ -314,33 +331,41 @@ orb typecheck
 orb test
 orb test --coverage
 orb build
+orb harness
 orb audit
 orb check
 orb cleanup
 ```
 
-The repository keeps a `prepack` lifecycle only as a safety adapter. It calls
-`./cli/orb check`, so `npm pack` and publication validate the same CLI-owned gate
-without depending on a duplicate package-script alias.
+Before the optional user-scoped launcher exists, use the repository entry point:
 
-The CLI is shell-only and is not published through the npm `bin` field. Run
-`./cli/orb help` for the complete command surface. Its ORB terminal wordmark uses
-ANSI neon cyan, blue, and magenta; set `NO_COLOR=1` for plain output.
+```bash
+./cli/orb check
+```
+
+`package.json#scripts` intentionally keeps only the `setup` bridge and npm's
+`prepack` lifecycle. `prepack` delegates to `./cli/orb check`, so `npm pack` and
+`npm publish` still enforce the complete quality gate without reintroducing
+public script aliases.
+
+The same shell CLI is published as the `orb` package binary so that
+`npx -y @neongate-ai/orbz@latest` can install Orbz into a consuming project.
+Repository-only commands reject execution from the temporary npm package.
 
 ## Git quality gates and semantic versioning
 
 Run the Git setup after installing dependencies:
 
 ```bash
-orb git setup
-orb git doctor
+./cli/orb git setup
+./cli/orb git doctor
 ```
 
 Husky wires two thin shell adapters:
 
-- `pre-commit` runs `orb git version-check --staged`, then `orb lint --staged`.
-  The latter delegates to lint-staged. Staged TypeScript, JavaScript, JSON, and
-  CSS receive Biome checks; shell files receive `/bin/sh -n` syntax validation.
+- `pre-commit` runs `orb git version-check --staged`, then lint-staged. Staged
+  TypeScript, JavaScript, JSON, and CSS receive Biome checks; shell files receive
+  `/bin/sh -n` syntax validation.
 - `commit-msg` runs Commitlint with `@commitlint/config-conventional`.
 
 Commit headers follow Conventional Commits, for example:
@@ -363,10 +388,10 @@ orb git version-check --staged
 ```
 
 `orb check` runs Biome, source and colocated-test type checks, Vitest, both
-builds, the SemVer check, and every versioned audit. CI invokes Orb directly,
-validates commit messages through Orb, and inspects the npm payload with
-`npm pack --dry-run`. Tests live next to the source they verify; shared test
-setup and fixtures remain under `test/`. Only `dist/` is intentional package
-payload.
+builds, the SemVer check, and all versioned audits. CI also validates commit
+messages through Orb and inspects the npm payload with `npm pack --dry-run`.
+Tests live next to the source they verify; shared test setup and fixtures remain
+under `test/`. The intentional package payload is `dist/`, the POSIX shell
+`cli/`, and npm's standard root metadata.
 
 MIT © NeonGate AI

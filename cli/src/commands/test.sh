@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
 . "$ORB_CLI_DIR/core/common.sh"
+orb_require_repository_source
 
 mode=run
 case "${1:-}" in

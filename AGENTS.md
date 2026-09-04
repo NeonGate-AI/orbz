@@ -15,7 +15,8 @@ This repository owns only the `@neongate-ai/orbz` npm package.
 9. `.agents/rules/008-engineering-cli.rule.md`
 10. `.agents/rules/009-git-commits-and-semantic-versioning.rule.md`
 11. `.agents/rules/010-colocated-tests.rule.md`
-12. The relevant SPEC and linked ADRs.
+12. `.agents/rules/011-public-orb-installer.rule.md`
+13. The relevant SPEC and linked ADRs.
 
 ## Repository boundaries
 
@@ -38,9 +39,6 @@ This repository owns only the `@neongate-ai/orbz` npm package.
 - Start behavioral changes with a SPEC and link an ADR when architecture changes.
 - Keep a `readme.md` in every directory under `.agents/` and `.audits/`.
 
-## Neon CLI
+## Engineering harness command
 
-The Neon CLI is an engineering harness dependency only. Run `./cli/orb harness`
-after dependency installation when the repository harness needs reconciliation.
-Do not run Neon setup automatically from install, build, test, or CI lifecycle
-hooks.
+Run `./cli/orb harness` explicitly when the repository harness needs scoring or reconciliation. Harness tooling is engineering-only and must never run automatically from install, build, test, or CI lifecycle hooks.

@@ -13,7 +13,7 @@ Package scripts duplicated CLI operations and `prepack` referenced the removed
 
 ## Scope
 
-Move linting, type checking, test modes, builds, Neon harness execution, commit
+Move linting, type checking, test modes, builds, explicit harness-score execution, commit
 history validation, and the complete quality gate into POSIX shell Orb commands.
 Reduce package scripts to the explicit setup bridge and the prepack safety
 lifecycle. Update CI, hooks, documentation, rules, and audits to use Orb.

@@ -6,7 +6,7 @@
 4. State prospective versus retrospective mode and use accurate dates.
 5. Add or update deterministic audit evidence when possible.
 6. Ensure every created directory has `readme.md`.
-7. Run `./cli/orb check`; it includes the versioned audits.
+7. Run `./cli/orb audit` and `./cli/orb check`.
 
 Do not add application state, generated transcripts, consumer data, or provider
 credentials to the harness.

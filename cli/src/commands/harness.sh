@@ -1,19 +1,21 @@
 #!/bin/sh
 set -eu
 . "$ORB_CLI_DIR/core/common.sh"
+orb_require_repository_source
 
 case "${1:-}" in
   --help|-h)
     cat <<'USAGE'
-Usage: orb harness [neon arguments]
+Usage: orb harness [harness-score arguments]
 
-Run the Neon engineering harness dependency from this checkout. Arguments are
-forwarded to the Neon CLI. This command is never part of the published runtime.
+Run the external harness-score utility explicitly for this checkout. Arguments
+are forwarded to the utility. This command is engineering-only and is never
+part of the Orbz runtime API.
 USAGE
     exit 0
     ;;
 esac
 
-orb_need pnpm
+orb_need npx
 cd "$ORB_PROJECT_ROOT"
-exec pnpm exec neon "$@"
+exec npx harness-score "$@"

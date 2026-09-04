@@ -1,6 +1,6 @@
 # ADR-0010: Use Orb as the single engineering command surface
 
-- Status: Accepted
+- Status: Accepted; amended by ADR-0011
 - Created: 2026-09-04
 - Updated: 2026-09-04
 - Mode: Current decision
@@ -36,8 +36,7 @@ redundant package alias cannot break the release gate. Contributors use
 a built-in `setup` command, documentation must use the explicit `pnpm run setup`
 form for the package script.
 
-The CLI remains engineering-only, POSIX shell, absent from the npm `bin` field,
-and excluded from the package payload.
+The original distribution boundary kept the CLI engineering-only and outside the npm payload. ADR-0011 supersedes that narrow portion by publishing the same POSIX shell entry point as an explicit npx installer while keeping repository-only commands guarded.
 
 ## Evidence
 
@@ -50,6 +49,6 @@ and excluded from the package payload.
 
 ## Related records
 
-- ADR-0007 and ADR-0008
+- ADR-0007, ADR-0008, and ADR-0011
 - SPEC-012
 - Rules 006, 008, and 009
