@@ -8,13 +8,13 @@
 
 ## Problem
 
-Owner request item 4: Orbz must offer one understandable configuration surface and an explicit selectable voice connection suitable for the Amarelo PWA. This bounded change owns: Implement a pure configuration transformer that validates semantic structure, converts serialized special values such as infinite animation repeat, derives existing TypeScript bindings and freezes nested output once. Avoid repeated ad hoc freezes and runtime file/network reads.
+Owner request item 4: Orbz must offer one understandable configuration surface and an explicit selectable voice connection suitable for a consuming PWA. This bounded change owns: Implement a pure configuration transformer that validates semantic structure, converts serialized special values such as infinite animation repeat, derives existing TypeScript bindings and freezes nested output once. Avoid repeated ad hoc freezes and runtime file/network reads.
 
 ## Scope
 
 Implement a pure configuration transformer that validates semantic structure, converts serialized special values such as infinite animation repeat, derives existing TypeScript bindings and freezes nested output once. Avoid repeated ad hoc freezes and runtime file/network reads.
 
-Affected boundary: src/core/lib/, src/core/ and configuration integration. One numbered spec and its implementation belong to one open review PR. No PR merge, release tag, package publication or Amarelo code change is authorized in this delivery. The five requested items are SPEC-016 through SPEC-020; dependencies are recorded in PR descriptions.
+Affected boundary: src/core/lib/, src/core/ and configuration integration. One numbered spec and its implementation belong to one open review PR. No PR merge, release tag, package publication or consuming-application code change is authorized in this delivery. The five requested items are SPEC-016 through SPEC-020; dependencies are recorded in PR descriptions.
 
 ## Requirements
 
@@ -71,3 +71,13 @@ acceptance checkboxes are intentionally not claims of passing those gates.
 Keep legacy public entry points and existing adapter contracts operational. JSON values are developer-authored build inputs, not arbitrary executable runtime code. Any prospective 1.0 release remains human-reviewed; these PRs do not publish a new package version.
 
 Source integration compilation passed in the assembled worktree. This records type integration only; behavioral assertions and live execution remain deferred.
+
+## Validation follow-up — 2026-09-05
+
+The owner now authorizes validation and merging passing PRs into staging. The
+full `npm pack --dry-run` prepack gate passed, including lint, source/test types,
+29 tests, both builds and every audit. Five new transformer regressions exercise
+editable derived values and infinity conversion, isolated immutable output,
+invalid references, unknown secret fields, rejected accessors without invocation,
+and invalid reduced-motion repetition. No production transformer fix was needed.
+The package terminology audit remains enabled and package-only wording now passes.

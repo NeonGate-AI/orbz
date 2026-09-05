@@ -9,7 +9,7 @@
 ## Problem
 
 Owner request item 1 asks Orb to follow the engineering CLI conventions used by
-the Amarelo repository. Source comparison confirms the shared shell entry point,
+the reference application repository. Source comparison confirms the shared shell entry point,
 managed launcher, contextual help, diagnostic output and usage-error status are
 the relevant conventions. The application and infrastructure commands in that
 repository do not belong to the Orbz package.
@@ -24,7 +24,7 @@ signals and tolerate a stale temporary directory.
 
 Change only the existing POSIX shell CLI, its guide and this specification.
 One numbered specification and its implementation belong to one open review PR.
-No PR merge, release tag, package publication or Amarelo code change is included.
+No PR merge, release tag, package publication or consuming-application code change is included.
 
 ## Requirements
 
@@ -102,3 +102,14 @@ changed CLI implementation file.
 The runtime package API is unchanged. The additive `install` alias is guarded
 as repository-only and never changes the published installer's default mode.
 Command help remains local and free of tool installation or runtime work.
+
+## Validation follow-up — 2026-09-05
+
+The owner now authorizes validation, conflict repair and merging passing PRs into
+`staging`. The earlier validation deferral described the initial delivery only.
+`npm pack --dry-run` passed, including its full `orb check` prepack gate: lint,
+source/test types, Vitest, both builds, SemVer and every audit. Package payload
+remains limited to the documented library, CLI and root metadata. The inherited
+harness terminology failure was repaired by keeping this package's scope wording
+product-neutral; no audit was disabled or weakened. Live provider calls remain
+outside this local validation.
