@@ -1,3 +1,4 @@
+import { orbzConfiguration } from '@core/config.data'
 import { ORBZ_MOTION_BY_STATE, REDUCED_ORBZ_MOTION_BY_STATE } from '@core/motion/motion.data'
 import type {
   OrbzAnimationScalar,
@@ -8,19 +9,8 @@ import type {
 } from '@core/motion/motion.types'
 import type { OrbzAnimationLayers, OrbzAnimationSettings } from '@element/element.types'
 
-const ANIMATED_STYLE_PROPERTIES = [
-  '--orbz-angle',
-  'opacity',
-  'rotate',
-  'scale',
-  'translate'
-] as const
-
-const EASINGS = {
-  easeInOut: 'ease-in-out',
-  easeOut: 'ease-out',
-  linear: 'linear'
-} as const
+const ANIMATED_STYLE_PROPERTIES = orbzConfiguration.motion.animatedStyleProperties
+const EASINGS = orbzConfiguration.motion.easings
 
 let anglePropertyRegistration: boolean | undefined
 
