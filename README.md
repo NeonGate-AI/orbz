@@ -285,7 +285,7 @@ configuration does not impose a conversation duration or pricing plan.
 | `orbz-speaking-change` | `{ speaking }`: audible response state |
 | `orbz-talk-error` | `{ error }`: sanitized built-in provider error |
 
-Render transcript strings as text. An application such as Amarelo can forward
+Render transcript strings as text. A consuming application can forward
 only events with `role === 'user' && final` to its memory runtime. Orbz does not
 store transcripts, record audio history, or implement memory, consent, tools,
 and usage accounting. Those remain application responsibilities.

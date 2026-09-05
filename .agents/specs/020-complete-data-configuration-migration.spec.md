@@ -8,13 +8,13 @@
 
 ## Problem
 
-Owner request item 5: Orbz must offer one understandable configuration surface and an explicit selectable voice connection suitable for the Amarelo PWA. This bounded change owns: Migrate remaining uppercase serializable data, speech defaults, element attributes, animation mappings and token-pattern configuration into the canonical JSON and derived bindings. Preserve executable logic and runtime object lifecycles in code. Reconcile all obsolete data sources and add an explicit migration inventory.
+Owner request item 5: Orbz must offer one understandable configuration surface and an explicit selectable voice connection suitable for a consuming PWA. This bounded change owns: Migrate remaining uppercase serializable data, speech defaults, element attributes, animation mappings and token-pattern configuration into the canonical JSON and derived bindings. Preserve executable logic and runtime object lifecycles in code. Reconcile all obsolete data sources and add an explicit migration inventory.
 
 ## Scope
 
 Migrate remaining uppercase serializable data, speech defaults, element attributes, animation mappings and token-pattern configuration into the canonical JSON and derived bindings. Preserve executable logic and runtime object lifecycles in code. Reconcile all obsolete data sources and add an explicit migration inventory.
 
-Affected boundary: src/ and relevant deterministic source audits. One numbered spec and its implementation belong to one open review PR. No PR merge, release tag, package publication or Amarelo code change is authorized in this delivery. The five requested items are SPEC-016 through SPEC-020; dependencies are recorded in PR descriptions.
+Affected boundary: src/ and relevant deterministic source audits. One numbered spec and its implementation belong to one open review PR. No PR merge, release tag, package publication or consuming-application code change is authorized in this delivery. The five requested items are SPEC-016 through SPEC-020; dependencies are recorded in PR descriptions.
 
 ## Requirements
 
@@ -80,3 +80,12 @@ Implementation evidence is source inspection, not an executed behavioral gate:
 ## Compatibility and risks
 
 Keep legacy public entry points and existing adapter contracts operational. JSON values are developer-authored build inputs, not arbitrary executable runtime code. Any prospective 1.0 release remains human-reviewed; these PRs do not publish a new package version.
+
+## Validation follow-up — 2026-09-05
+
+The owner now authorizes validation and staging merges after passing gates.
+`npm pack --dry-run` passed with the complete prepack gate, 33 tests, both builds
+and all repository audits, including the delivered configuration inventory guard.
+No audit threshold was lowered or check removed. Inherited transformer and voice
+regressions remain present. Live provider behavior is outside this deterministic
+validation.

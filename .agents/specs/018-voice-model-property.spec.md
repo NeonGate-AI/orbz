@@ -8,13 +8,13 @@
 
 ## Problem
 
-Owner request item 3: Orbz must offer one understandable configuration surface and an explicit selectable voice connection suitable for the Amarelo PWA. This bounded change owns: Add a typed native voiceModel property supporting Web Speech, OpenAI text-to-speech and direct OpenAI Realtime WebRTC. Keep existing voiceEngine compatible. Public model configuration is distinct from consumer session authorization; built-in adapters use shared JSON defaults.
+Owner request item 3: Orbz must offer one understandable configuration surface and an explicit selectable voice connection suitable for a consuming PWA. This bounded change owns: Add a typed native voiceModel property supporting Web Speech, OpenAI text-to-speech and direct OpenAI Realtime WebRTC. Keep existing voiceEngine compatible. Public model configuration is distinct from consumer session authorization; built-in adapters use shared JSON defaults.
 
 ## Scope
 
 Add a typed native voiceModel property supporting Web Speech, OpenAI text-to-speech and direct OpenAI Realtime WebRTC. Keep existing voiceEngine compatible. Public model configuration is distinct from consumer session authorization; built-in adapters use shared JSON defaults.
 
-Affected boundary: src/talk/, src/ports/, src/services/, src/factories/ and element contracts. One numbered spec and its implementation belong to one open review PR. No PR merge, release tag, package publication or Amarelo code change is authorized in this delivery. The five requested items are SPEC-016 through SPEC-020; dependencies are recorded in PR descriptions.
+Affected boundary: src/talk/, src/ports/, src/services/, src/factories/ and element contracts. One numbered spec and its implementation belong to one open review PR. No PR merge, release tag, package publication or consuming-application code change is authorized in this delivery. The five requested items are SPEC-016 through SPEC-020; dependencies are recorded in PR descriptions.
 
 ## Requirements
 
@@ -57,3 +57,16 @@ under the owner delivery-first instruction. Acceptance remains pending execution
 ## Compatibility and risks
 
 Keep legacy public entry points and existing adapter contracts operational. JSON values are developer-authored build inputs, not arbitrary executable runtime code. Any prospective 1.0 release remains human-reviewed; these PRs do not publish a new package version.
+
+## Validation follow-up — 2026-09-05
+
+The owner now authorizes validation and merging passing PRs into staging. The
+full `npm pack --dry-run` prepack gate passes with lint, source/test types,
+33 tests, both builds, version checks and all audits. New deterministic cases
+exercise inert native selection/custom engine precedence, supersession, rejected
+startup isolation, and microphone permission arriving after cancellation. The
+failed-start case first reproduced a stale callback changing state to speaking;
+the runner now retires the failed run and clears its port before cleanup. The
+regression passes, preserving sanitized errors and ignoring late events. No live
+provider session or paid call was used; actual browser voice quality and barge-in
+remain live acceptance work.
