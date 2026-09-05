@@ -9,7 +9,7 @@
 ## Problem
 
 Owner request item 1 asks Orb to follow the engineering CLI conventions used by
-the Amarelo repository. Source comparison confirms the shared shell entry point,
+the reference application repository. Source comparison confirms the shared shell entry point,
 managed launcher, contextual help, diagnostic output and usage-error status are
 the relevant conventions. The application and infrastructure commands in that
 repository do not belong to the Orbz package.
@@ -24,7 +24,7 @@ signals and tolerate a stale temporary directory.
 
 Change only the existing POSIX shell CLI, its guide and this specification.
 One numbered specification and its implementation belong to one open review PR.
-No PR merge, release tag, package publication or Amarelo code change is included.
+No PR merge, release tag, package publication or consuming-application code change is included.
 
 ## Requirements
 
