@@ -38,3 +38,8 @@ occurred. A staging merge does not authorize version changes, tags or npm public
 The table describes recorded implementation evidence. Compilation/syntax checks,
 behavioral tests and live-provider acceptance are distinct; update validation
 status only when the corresponding evidence is available.
+
+## README presentation delivery
+
+- [SPEC-023](./023-refine-readme-presentation.spec.md): proposed formatting-only
+  refinement with exact content preservation, documentation audits and review guidance.
