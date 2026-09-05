@@ -58,3 +58,6 @@ export type {
   WebSpeechAdapterOptions
 } from '@talk/talk.types'
 export { WebSpeechAdapter } from '@talk/web-speech.adapter'
+
+export { transformOrbzConfiguration } from '@core/lib/transform-configuration.compute'
+export type { OrbzConfiguration, OrbzConfigurationSource, OrbzDeepReadonly } from '@core/config.types'
