@@ -173,7 +173,11 @@ into the library, so loading an orb does not fetch a configuration file.
 Core appearance and motion are connected in this foundation. Subsequent PRs
 connect the remaining speech, element and animation consumers.
 
-The exported `orbzConfiguration` is readonly. Existing uppercase exports remain
+The exported `orbzConfiguration` is readonly. `transformOrbzConfiguration(input)`
+validates a complete configuration, clones it, derives runtime values and freezes
+the result. It rejects invalid fields and references with path-oriented errors,
+without printing values or performing I/O. It returns an isolated value and does
+not replace the package singleton or mutate the supplied object. Existing uppercase exports remain
 derived compatibility bindings; their data is maintained in JSON. Animation
 repeat uses the JSON string `"infinite"`, converted to runtime infinity only in
 the motion transition field.
