@@ -10,3 +10,5 @@ Use [`template.md`](./template.md) for new decisions. Never rewrite an accepted
 ADR to hide a changed decision; record the update and supersede it explicitly.
 
 [ADR-0013](0013-canonical-json-configuration.adr.md) establishes the single JSON source and derived typed configuration.
+
+[ADR-0014](0014-voice-model-and-realtime-port.adr.md) separates voice selection, live audio lifecycle and application-owned session authorization.

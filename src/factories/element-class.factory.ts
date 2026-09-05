@@ -21,12 +21,21 @@ import { normalizeOrbzState } from '@core/lib/normalize-state.compute'
 import { ORBZ_OBSERVED_ATTRIBUTES } from '@element/element.data'
 import type { OrbzElement, OrbzElementConstructor } from '@element/element.types'
 import { orbzShadowTreeFactory } from '@factories/shadow-tree.factory'
+import type { OrbzConversationState } from '@ports/conversation.port'
 import type { OrbzIntelligencePort } from '@ports/intelligence.port'
 import type { OrbzVoiceEnginePort } from '@ports/voice-engine.port'
 import { OrbzAnimationService } from '@services/animation.service'
+import { OrbzConversationRunnerService } from '@services/conversation-runner.service'
 import { OrbzTalkRunnerService } from '@services/talk-runner.service'
+import {
+  createDefaultOrbzVoiceModel,
+  createOrbzConversation,
+  createOrbzVoiceEngine
+} from '@services/voice-model.service'
+import { normalizeVoiceModel } from '@talk/normalize-voice-model.compute'
 import { DEFAULT_TALK_FLOW } from '@talk/talk.data'
 import type { OrbzTalkContext, OrbzTalkStep } from '@talk/talk.types'
+import type { OrbzRealtimeSession, OrbzVoiceModel } from '@talk/voice-model.types'
 
 const ELEMENT_CONSTRUCTORS = new WeakMap<object, OrbzElementConstructor>()
 
@@ -49,16 +58,21 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
     static readonly observedAttributes = ORBZ_OBSERVED_ATTRIBUTES
 
     readonly #animationService: OrbzAnimationService
+    readonly #conversationRunner: OrbzConversationRunnerService
     readonly #talkRunner: OrbzTalkRunnerService
     readonly #visualRoot: HTMLElement
     #activationAbortController: AbortController | undefined
     #colorConflictCheckQueued = false
     #connected = false
+    #customVoiceEngine: OrbzVoiceEnginePort | undefined
     #hasColorConflict = false
     #motionQuery: MediaQueryList | undefined
     #speaking = false
+    #stateBeforeConversation: OrbzState | undefined
     #stateBeforeSpeech: OrbzState | undefined
     #talkFlow: readonly OrbzTalkStep[] = DEFAULT_TALK_FLOW
+    #voiceModel: Readonly<OrbzVoiceModel> | undefined = createDefaultOrbzVoiceModel()
+    #realtimeSession: OrbzRealtimeSession | undefined
 
     readonly #handleMotionPreferenceChange = (): void => {
       if (this.reducedMotion === 'system') {
@@ -78,6 +92,20 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
         this.#handleSpeakingChange.bind(this),
         this.#handleTalkError.bind(this)
       )
+      this.#conversationRunner = new OrbzConversationRunnerService({
+        onStateChange: this.#handleConversationState.bind(this),
+        onTranscript: (transcript) => {
+          this.dispatchEvent(new CustomEvent('orbz-transcript', { detail: transcript }))
+        },
+        onError: (error) => {
+          this.dispatchEvent(
+            new CustomEvent('orbz-talk-error', {
+              detail: Object.freeze({ error })
+            })
+          )
+        }
+      })
+      this.#talkRunner.voiceEngine = createOrbzVoiceEngine(this.#voiceModel)
     }
 
     get intelligence(): OrbzIntelligencePort | undefined {
@@ -121,9 +149,44 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
         throw new TypeError('Orbz voiceEngine must implement speak() and stop().')
       }
 
-      this.#activationAbortController?.abort()
-      this.#activationAbortController = undefined
-      this.#talkRunner.voiceEngine = value
+      this.stopTalking()
+      this.stopConversation()
+      this.#customVoiceEngine = value
+      this.#talkRunner.voiceEngine = value ?? createOrbzVoiceEngine(this.#voiceModel)
+    }
+
+    get voiceModel(): Readonly<OrbzVoiceModel> | undefined {
+      return this.#voiceModel
+    }
+
+    set voiceModel(value: OrbzVoiceModel | null | undefined) {
+      const model = normalizeVoiceModel(value)
+      const engine = this.#customVoiceEngine ?? createOrbzVoiceEngine(model)
+      this.stopTalking()
+      this.stopConversation()
+      this.#voiceModel = model
+      this.#talkRunner.voiceEngine = engine
+    }
+
+    get realtimeSession(): OrbzRealtimeSession | undefined {
+      return this.#realtimeSession
+    }
+
+    set realtimeSession(value: OrbzRealtimeSession | undefined) {
+      if (value !== undefined && typeof value !== 'function') {
+        if (!value || !String(value.endpoint ?? '').trim()) {
+          throw new TypeError(
+            'Orbz realtimeSession requires an authorizer or application endpoint.'
+          )
+        }
+        value = Object.freeze({ ...value, endpoint: String(value.endpoint) })
+      }
+      this.stopConversation()
+      this.#realtimeSession = value
+    }
+
+    get conversationState(): OrbzConversationState {
+      return this.#conversationRunner.state
     }
 
     get elevated(): boolean {
@@ -207,22 +270,22 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       }
 
       this.#connected = true
+      this.#upgradeVoiceProperties()
       this.#connectMotionPreference()
       this.#synchronizePresentationAttributes()
       this.#renderMotion()
     }
 
     disconnectedCallback(): void {
+      this.stopTalking()
+      this.stopConversation()
       if (!this.#connected) {
         return
       }
 
       this.#connected = false
-      this.#activationAbortController?.abort()
-      this.#activationAbortController = undefined
       this.#disconnectMotionPreference()
       this.#animationService.dispose()
-      this.#talkRunner.stop()
     }
 
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
@@ -341,6 +404,7 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
     }
 
     startTalking(): Promise<void> {
+      this.stopConversation()
       this.#activationAbortController?.abort()
       this.#activationAbortController = undefined
 
@@ -359,6 +423,68 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
       this.#activationAbortController?.abort()
       this.#activationAbortController = undefined
       this.#talkRunner.stop()
+    }
+
+    async startConversation(): Promise<void> {
+      this.stopTalking()
+      this.stopConversation()
+      if (this.#customVoiceEngine) {
+        const error = new Error(
+          'Clear the custom voiceEngine before starting a voiceModel conversation.'
+        )
+        this.#handleTalkError(error)
+        throw error
+      }
+      let conversation: ReturnType<typeof createOrbzConversation>
+      try {
+        conversation = createOrbzConversation(this.#voiceModel, this.#realtimeSession)
+      } catch {
+        const error = new Error(
+          'Orbz startConversation() requires a Realtime voiceModel and realtimeSession.'
+        )
+        this.#handleTalkError(error)
+        throw error
+      }
+      this.#stateBeforeConversation = this.state
+      await this.#conversationRunner.start(conversation)
+    }
+
+    stopConversation(): void {
+      this.#conversationRunner.stop()
+    }
+
+    interruptConversation(): void {
+      this.#conversationRunner.interrupt()
+    }
+
+    #handleConversationState(state: OrbzConversationState): void {
+      this.#handleSpeakingChange(state === 'speaking')
+      if (state === 'idle' || state === 'error') {
+        const previous = this.#stateBeforeConversation
+        this.#stateBeforeConversation = undefined
+        if (previous) {
+          this.state = previous
+        }
+      } else {
+        this.state = state === 'connecting' ? 'thinking' : state
+      }
+      this.dispatchEvent(
+        new CustomEvent('orbz-conversation-state-change', {
+          detail: Object.freeze({ state })
+        })
+      )
+    }
+
+    #upgradeVoiceProperties(): void {
+      // Recover properties assigned before customElements.define() upgraded the host.
+      for (const property of ['voiceModel', 'realtimeSession', 'voiceEngine'] as const) {
+        if (Object.hasOwn(this, property)) {
+          const value: unknown = Reflect.get(this, property)
+          if (Reflect.deleteProperty(this, property)) {
+            Reflect.set(this, property, value)
+          }
+        }
+      }
     }
 
     #waitForTalkActivation(): void {

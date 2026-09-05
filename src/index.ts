@@ -59,5 +59,25 @@ export type {
 } from '@talk/talk.types'
 export { WebSpeechAdapter } from '@talk/web-speech.adapter'
 
+export { OpenAIRealtimeAdapter } from '@talk/openai-realtime.adapter'
+export type {
+  OpenAIRealtimeAdapterOptions,
+  OpenAIRealtimeModel,
+  OrbzOpenAIRealtimeVoiceModel,
+  OrbzOpenAISpeechVoiceModel,
+  OrbzRealtimeSession,
+  OrbzRealtimeSessionAuthorizer,
+  OrbzRealtimeSessionEndpoint,
+  OrbzRealtimeSessionRequest,
+  OrbzVoiceModel,
+  OrbzWebSpeechVoiceModel
+} from '@talk/voice-model.types'
+export type {
+  OrbzConversationHandlers,
+  OrbzConversationPort,
+  OrbzConversationState,
+  OrbzTranscript
+} from '@ports/conversation.port'
+
 export { transformOrbzConfiguration } from '@core/lib/transform-configuration.compute'
 export type { OrbzConfiguration, OrbzConfigurationSource, OrbzDeepReadonly } from '@core/config.types'

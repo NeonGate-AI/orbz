@@ -20,8 +20,11 @@
 `@neongate-ai/orbz` is a framework-agnostic, SSR-safe Web Component for giving
 AI voice interfaces a visible state, motion system, configurable palette, and
 provider-neutral speech boundary. The package renders the native `<orb-z>`
-element; it does not ship a framework wrapper, application, persona, transcript,
-or backend.
+element. Applications own the persona, transcript UI, session authorization,
+and backend integrations.
+
+The configuration and `voiceModel` APIs below are implemented on these review
+branches. They have not been published to npm; the package version remains 0.4.3.
 
 - [Documentation](https://orbz.site)
 - [npm package](https://www.npmjs.com/package/@neongate-ai/orbz)
@@ -188,6 +191,101 @@ Changing bundled defaults requires a rebuild; changing an individual orb uses
 its documented properties. An installed package does not load configuration
 from the consumer's working directory.
 
+## Select a voice model
+
+Assign a typed JavaScript property on the native element; object configuration
+is not serialized into an HTML attribute. Selecting a provider is silent.
+
+```ts
+import type { OrbzElement } from '@neongate-ai/orbz'
+import '@neongate-ai/orbz/browser'
+
+const orb = document.querySelector<OrbzElement>('orb-z')!
+orb.voiceModel = {
+  provider: 'openai-realtime',
+  model: 'gpt-realtime-2'
+}
+orb.realtimeSession = { endpoint: '/api/voice/session' }
+
+document.querySelector('#start')!.addEventListener('click', () => {
+  void orb.startConversation().catch(() => {
+    // Show an accessible error; details arrive in orbz-talk-error.
+  })
+})
+document.querySelector('#interrupt')!.addEventListener('click', () => {
+  orb.interruptConversation()
+})
+document.querySelector('#stop')!.addEventListener('click', () => {
+  orb.stopConversation()
+})
+```
+
+Provide visible Start, Interrupt, and End buttons with those IDs outside the orb.
+
+| Provider | Activation | Application supplies |
+| --- | --- | --- |
+| `web-speech` | `speech` + `startTalking()` | Optional language and browser voice preferences |
+| `openai-speech` | `speech` + `startTalking()` | Audio endpoint; optional TTS model and voice |
+| `openai-realtime` | `startConversation()` | Session authorizer or endpoint; optional Realtime model and voice |
+
+For example, `orb.voiceModel = { provider: 'web-speech', language: 'pt-BR' }`
+selects browser speech. OpenAI text-to-speech uses
+`{ provider: 'openai-speech', endpoint: '/api/voice/speech' }`; that endpoint
+returns audio. Realtime models use the Realtime provider, not the speech endpoint.
+Omitted model and voice options read the corresponding JSON defaults.
+
+A fork can set `speech.defaultVoiceModel` to `web-speech` or `openai-realtime`
+to configure new elements silently. `null` leaves the selection unset. An
+`openai-speech` default waits for an explicit `voiceModel` assignment containing
+an application endpoint. Assigning `null` or `undefined` explicitly clears a
+selection without restoring the JSON default.
+
+An explicitly assigned `voiceEngine` takes precedence. Set
+`orb.voiceEngine = undefined` to use `voiceModel` again. Starting a conversation
+stops text-to-speech; starting text-to-speech stops the conversation. Replacing
+the selection or authorization, stopping, or disconnecting the element releases
+active browser media resources. No automatic reconnection or paid retry occurs.
+
+### Realtime session endpoint
+
+`realtimeSession.endpoint` belongs to the consuming application. Orbz POSTs JSON
+`{ sdp, model, voice }` and expects an SDP answer as `application/sdp` text.
+The endpoint must authenticate/authorize the request and enforce the application's
+allowed models and voices. It exchanges the offer with OpenAI
+`POST /v1/realtime/calls`, sending multipart `sdp` and `session` fields, and returns
+the answer. The permanent OpenAI key stays on that server.
+
+The server's session configuration owns instructions, tools, input transcription,
+and turn detection. Enable server VAD response creation and interruption for
+automatic voice turns and barge-in. Enable input audio transcription to receive
+user text events. After this setup exchange, microphone and assistant audio flow
+directly between the browser and OpenAI over WebRTC. See the official
+[WebRTC connection guide](https://developers.openai.com/api/docs/guides/realtime-webrtc)
+and [GPT-Realtime-2 model](https://developers.openai.com/api/docs/models/gpt-realtime-2).
+
+Applications needing custom authorization can instead assign an async
+`realtimeSession({ sdp, model, voice, signal })` callback returning the SDP answer.
+Honor its `AbortSignal` during setup and for application-owned session cleanup.
+The application owns any server sideband connection and remote call cleanup;
+closing the component does not implement those backend responsibilities.
+
+`startConversation()` resolves once the peer and data channel are ready, or
+rejects on failed startup. Microphone permission and audio playback depend on the
+browser's activation policy. The default startup timeout is 20 seconds; the
+configuration does not impose a conversation duration or pricing plan.
+
+| Event | Detail |
+| --- | --- |
+| `orbz-conversation-state-change` | `{ state }`: idle, connecting, listening, thinking, speaking, or error |
+| `orbz-transcript` | `{ role, text, final, itemId? }`: bounded user or assistant text |
+| `orbz-speaking-change` | `{ speaking }`: audible response state |
+| `orbz-talk-error` | `{ error }`: sanitized built-in provider error |
+
+Render transcript strings as text. A consuming application can forward
+only events with `role === 'user' && final` to its memory runtime. Orbz does not
+store transcripts, record audio history, or implement memory, consent, tools,
+and usage accounting. Those remain application responsibilities.
+
 ## Speech and language
 
 The `speech` property has no default text. `WebSpeechAdapter` uses Brazilian
@@ -217,7 +315,7 @@ visible transcripts, and captions.
 
 A custom provider can implement `OrbzVoiceEnginePort`. The included
 `OpenAISpeechAdapter` accepts a consumer-owned endpoint, headers, and delivery
-instructions. Provider credentials must stay on the application or server side.
+instructions. Permanent provider credentials must stay on the application server.
 
 ### Advanced talk flow
 
@@ -405,7 +503,7 @@ layout.
 | `@neongate-ai/orbz/react-types` | Type-only React JSX augmentation. |
 | `@neongate-ai/orbz/standalone` | Direct-browser/CDN bundle. |
 | `@neongate-ai/orbz/index.css` | Explicit stylesheet export. |
-| `orb` package binary | POSIX shell project installer used by `npx @neongate-ai/orbz`. |
+| `orb` package binary | POSIX shell installer used by the explicit npx invocation above. |
 
 ## Contributing
 
@@ -516,12 +614,16 @@ Tests live next to the source they verify; shared test setup and fixtures remain
 under `test/`. The intentional package payload is `dist/`, the POSIX shell
 `cli/`, and npm's standard root metadata.
 
-## Next versions 
-I'm working on provide a IoC so you can pass your own voice model, less robotic. Newer OpenAI models like [GPT-Realtime-2](https://developers.openai.com/api/docs/models/gpt-realtime-2) has more human-like voice sound.
+## Release review
+
+SPEC-016 through SPEC-020 are separate review PRs. These changes are a candidate
+for the first 1.0 release; versioning, merge order, behavioral validation and
+publication remain a separate owner decision. This work does not change the
+package version, create a release tag, or publish to npm.
 
 ## License
 
-#MIT © NeonGate AI
+MIT © NeonGate AI
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -538,4 +640,4 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
