@@ -50,6 +50,30 @@ describe('factory/element-class', () => {
     expect(voiceEngine.speak).not.toHaveBeenCalled()
   })
 
+  it('keeps Realtime selection inert and preserves explicit custom output precedence', async () => {
+    const authorize = vi.fn(async () => 'v=0\r\n')
+    const voiceEngine = {
+      speak: vi.fn(async (_text: string) => undefined),
+      stop: vi.fn()
+    }
+    const orb = createOrbz()
+    orb.voiceEngine = voiceEngine
+    orb.voiceModel = { provider: 'openai-realtime', model: 'gpt-realtime-2' }
+    orb.realtimeSession = authorize
+    orb.speech = 'Consumer text'
+
+    expect(orb.conversationState).toBe('idle')
+    expect(voiceEngine.speak).not.toHaveBeenCalled()
+    expect(authorize).not.toHaveBeenCalled()
+    expect(orb.hasAttribute('voice-model')).toBe(false)
+    expect(orb.hasAttribute('realtime-session')).toBe(false)
+
+    await orb.startTalking()
+    expect(voiceEngine.speak).toHaveBeenCalledWith('Consumer text')
+    await expect(orb.startConversation()).rejects.toThrow('Clear the custom voiceEngine')
+    expect(authorize).not.toHaveBeenCalled()
+  })
+
   it('speaks explicit content and restores the prior visual state', async () => {
     const voiceEngine = {
       speak: vi.fn(async (_text: string) => undefined),

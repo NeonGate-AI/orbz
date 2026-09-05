@@ -90,3 +90,14 @@ fetch overrides and custom voice engines are consumer-owned executable code;
 Orbz cannot inspect closures, stop arbitrary expando properties or infer whether
 a string contains a secret. Public URLs/options must not be used to smuggle tokens.
 The boundary is API discipline and server ownership, not an XSS sandbox.
+
+## Validation follow-up — 2026-09-05
+
+The owner now authorizes behavioral validation and merging passing PRs into
+staging. `npm pack --dry-run` passed with source/test types, lint, 42 tests, both
+builds and all audits. Nine focused credential-boundary cases cover unknown and
+hidden fields, accessors without invocation, immutable URL snapshots, inert
+callbacks, fetch policy validation, direct-adapter enforcement, and native
+property rejection that preserves existing configuration without stopping it.
+Only synthetic strings were used; no provider credentials or live calls were
+used. This supersedes the initial behavioral-validation deferral for these cases.

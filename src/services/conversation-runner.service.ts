@@ -47,6 +47,9 @@ export class OrbzConversationRunnerService {
       if (run !== this.#run) {
         return
       }
+      // Retire the failed run before cleanup, which may itself emit callbacks.
+      this.#run += 1
+      this.#conversation = undefined
       conversation.stop()
       this.#setState('error')
       if (!reportedError) {

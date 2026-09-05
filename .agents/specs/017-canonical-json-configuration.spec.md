@@ -8,13 +8,13 @@
 
 ## Problem
 
-Owner request item 2: Orbz must offer one understandable configuration surface and an explicit selectable voice connection suitable for the Amarelo PWA. This bounded change owns: Create src/orbz.config.json with semantic sections for component, appearance, motion, speech and realtime defaults; migrate current core configuration and motion data without changing appearance. Preserve readonly typed compatibility bindings with no independent literal sources.
+Owner request item 2: Orbz must offer one understandable configuration surface and an explicit selectable voice connection suitable for a consuming PWA. This bounded change owns: Create src/orbz.config.json with semantic sections for component, appearance, motion, speech and realtime defaults; migrate current core configuration and motion data without changing appearance. Preserve readonly typed compatibility bindings with no independent literal sources.
 
 ## Scope
 
 Create src/orbz.config.json with semantic sections for component, appearance, motion, speech and realtime defaults; migrate current core configuration and motion data without changing appearance. Preserve readonly typed compatibility bindings with no independent literal sources.
 
-Affected boundary: src/core/ and src/orbz.config.json. One numbered spec and its implementation belong to one open review PR. No PR merge, release tag, package publication or Amarelo code change is authorized in this delivery. The five requested items are SPEC-016 through SPEC-020; dependencies are recorded in PR descriptions.
+Affected boundary: src/core/ and src/orbz.config.json. One numbered spec and its implementation belong to one open review PR. No PR merge, release tag, package publication or consuming-application code change is authorized in this delivery. The five requested items are SPEC-016 through SPEC-020; dependencies are recorded in PR descriptions.
 
 ## Requirements
 
@@ -46,3 +46,14 @@ Focused source integration compilation passed in the assembled configuration/voi
 Keep legacy public entry points and existing adapter contracts operational. JSON values are developer-authored build inputs, not arbitrary executable runtime code. Any prospective 1.0 release remains human-reviewed; these PRs do not publish a new package version.
 
 Configurable defaults use supported unions/primitives rather than falsely retaining literal types after a fork edits JSON. The potential widening of default-value types is disclosed for release review.
+
+## Validation follow-up — 2026-09-05
+
+The owner now authorizes validation, conflict repair and merging passing PRs into
+`staging`. The earlier validation deferral described the initial delivery only.
+`npm pack --dry-run` passed, including its full `orb check` prepack gate: lint,
+source/test types, Vitest, both builds, SemVer and every audit. Package payload
+remains limited to the documented library, CLI and root metadata. The inherited
+harness terminology failure was repaired by keeping this package's scope wording
+product-neutral; no audit was disabled or weakened. Live provider calls remain
+outside this local validation.
