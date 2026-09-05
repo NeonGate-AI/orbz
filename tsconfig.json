@@ -5,25 +5,52 @@
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "noEmit": true,
     "paths": {
-      "@core/*": ["./src/core/*"],
-      "@element/*": ["./src/element/*"],
-      "@factories/*": ["./src/factories/*"],
-      "@orbz": ["./src/index.ts"],
-      "@ports/*": ["./src/ports/*"],
-      "@services/*": ["./src/services/*"],
-      "@talk/*": ["./src/talk/*"]
+      "@core/*": [
+        "./src/core/*"
+      ],
+      "@element/*": [
+        "./src/element/*"
+      ],
+      "@factories/*": [
+        "./src/factories/*"
+      ],
+      "@orbz": [
+        "./src/index.ts"
+      ],
+      "@ports/*": [
+        "./src/ports/*"
+      ],
+      "@services/*": [
+        "./src/services/*"
+      ],
+      "@talk/*": [
+        "./src/talk/*"
+      ],
+      "@configuration": [
+        "./src/orbz.config.json"
+      ]
     },
     "rootDir": "src",
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2022",
-    "types": []
+    "types": [],
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.test.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.json"
+  ],
+  "exclude": [
+    "src/**/*.test.ts"
+  ]
 }

@@ -24,6 +24,7 @@ do
 done
 
 for path in \
+  src/orbz.config.json \
   src/core/config.data.ts \
   src/core/appearance/appearance.types.ts \
   src/core/appearance/merge-colors.compute.ts \
@@ -36,9 +37,9 @@ do
 done
 
 if [ -e src/core/core.data.ts ]; then
-  fail 'legacy src/core/core.data.ts remains; canonical path is config.data.ts'
+  fail 'legacy src/core/core.data.ts remains; canonical configuration is src/orbz.config.json'
 else
-  pass 'configuration data uses src/core/config.data.ts'
+  pass 'configuration uses src/orbz.config.json with typed compatibility bindings'
 fi
 
 legacy_core_files='appearance.types.ts is-preset-name.guard.ts is-reduced-motion.guard.ts is-state.guard.ts merge-colors.compute.ts motion.data.ts motion.types.ts normalize-preset.compute.ts normalize-reduced-motion.compute.ts normalize-size.compute.ts normalize-speed.compute.ts normalize-state.compute.ts'
@@ -54,10 +55,10 @@ else
   pass 'core imports use concern paths'
 fi
 
-if find src \( -type f -o -type d \) -name 'orbz*' -print | grep . >/dev/null 2>&1; then
-  fail 'a source path begins with orbz'
+if find src \( -type f -o -type d \) -name 'orbz*' ! -path src/orbz.config.json -print | grep . >/dev/null 2>&1; then
+  fail 'a source path begins with orbz outside the canonical JSON exception'
 else
-  pass 'source paths use responsibility names'
+  pass 'source paths use responsibility names with the canonical JSON exception'
 fi
 
 if find src -type f \( -iname '*react*component*' -o -iname '*vue*' -o -iname '*svelte*' -o -iname '*angular*' \) -print | grep . >/dev/null 2>&1; then

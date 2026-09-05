@@ -25,7 +25,8 @@ export {
   ORBZ_PRESET_NAMES,
   ORBZ_PRESETS,
   ORBZ_REDUCED_MOTION_MODES,
-  ORBZ_STATES
+  ORBZ_STATES,
+  orbzConfiguration
 } from '@core/config.data'
 export { isOrbzPresetName } from '@core/lib/is-preset-name.guard'
 export { isOrbzState } from '@core/lib/is-state.guard'
