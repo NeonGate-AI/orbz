@@ -41,5 +41,5 @@ status only when the corresponding evidence is available.
 
 ## README presentation delivery
 
-- [SPEC-023](./023-refine-readme-presentation.spec.md): proposed formatting-only
+- [SPEC-023](./023-refine-readme-presentation.spec.md): implemented formatting-only
   refinement with exact content preservation, documentation audits and review guidance.

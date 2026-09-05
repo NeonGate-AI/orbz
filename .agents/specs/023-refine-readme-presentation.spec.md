@@ -1,6 +1,6 @@
 # SPEC-023: Refine README presentation without changing content
 
-- Status: Proposed
+- Status: Implemented
 - Created: 2026-09-05
 - Updated: 2026-09-05
 - Mode: Prospective
@@ -49,21 +49,38 @@ SPEC-023 removes that collision; it does not rewrite the other delivery.
 
 ## Acceptance criteria
 
-- [ ] Existing resource links are centered and emphasized without copy changes.
-- [ ] Heading hierarchy and section spacing improve scanning without changing
+- [x] Existing resource links are centered and emphasized without copy changes.
+- [x] Heading hierarchy and section spacing improve scanning without changing
       labels, section order or native anchors.
-- [ ] Rendered visible text, code, links, images and table cells equal the final
+- [x] Rendered visible text, code, links, images and table cells equal the final
       upstream baseline under the comparison rules above.
-- [ ] Documentation audit passes and rejects missing/reordered resources,
+- [x] Documentation audit passes and rejects missing/reordered resources,
       changed destinations and wrong heading levels; the untouched baseline fails.
-- [ ] The spec catalog and review workflow describe this bounded delivery.
-- [ ] Full Orb validation, npm payload inspection and independent review pass;
+- [x] The spec catalog and review workflow describe this bounded delivery.
+- [x] Full Orb validation, npm payload inspection and independent review pass;
       final-head remote gates are recorded in the PR before merge.
 
 ## Evidence
 
-- Pending final integration base, semantic comparison counts, negative probes,
-  full Orb gate, npm package inspection and independent review.
+- Final content baseline: `ccf265d1145db99d222919a8d8b2dd082a68dc33`, retaining
+  the upstream configuration, voice and SPEC-022 README delivery in full.
+- GFM parsed with Marked and inspected with Happy DOM: identical normalized
+  visible text, 23 ordered heading labels, 13 links, 5 images, 258 exact code
+  spans/blocks and 132 table cells. Native headings retain their labels and
+  order. This is a rendered-DOM comparison, not a browser screenshot review.
+- The untouched baseline fails the five new presentation expectations. Four
+  temporary mutation probes reject a missing resource, reordered resources,
+  a changed destination and a wrong heading level. Temporary comparison scripts
+  and rendered output are outside the tracked package.
+- `./cli/orb check` passes: lint, source/test types, 19 test files / 42 tests,
+  builds, version verification and all audits. `npm pack --dry-run` passes its
+  prepack gate and retains the intentional 41-file payload at version 0.4.3.
+- Independent review passes against the final baseline: exactly five scoped
+  files, preserved upstream content, repeated semantic/probe checks and clean
+  `git diff --check`. No application, asset or dependency files changed.
+- Final published head, remote CI/deployment status and mergeability are
+  recorded in the replacement PR before merge; local results alone do not
+  authorize merging an unchecked remote head.
 - PR #9 remains historical evidence for the earlier formatting attempt; its
   results do not authorize merging a different head.
 
