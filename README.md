@@ -156,6 +156,34 @@ orb --help
 Orb requires an environment with `/bin/sh` (Linux, macOS, WSL, or another
 POSIX-compatible shell environment).
 
+## Canonical configuration
+
+Fork maintainers edit [`src/orbz.config.json`](./src/orbz.config.json) and rebuild
+the package. It is the authored source for public defaults; the JSON is bundled
+into the library, so loading an orb does not fetch a configuration file.
+
+| Section | Configuration |
+| --- | --- |
+| `component` | Element identity, supported states, attributes, size and motion defaults |
+| `appearance` | Presets, colors and per-state appearance |
+| `motion` | Full/reduced animation profiles, style properties and easing mappings |
+| `speech` | Web Speech, OpenAI text-to-speech and empty talk-flow defaults |
+| `realtime` | OpenAI Realtime model, voice, timeouts and event bounds |
+
+Core appearance and motion are connected in this foundation. Subsequent PRs
+connect the remaining speech, element and animation consumers.
+
+The exported `orbzConfiguration` is readonly. Existing uppercase exports remain
+derived compatibility bindings; their data is maintained in JSON. Animation
+repeat uses the JSON string `"infinite"`, converted to runtime infinity only in
+the motion transition field.
+
+Provider/model identifiers are public configuration. Keep API keys, session
+tokens and authorization callbacks in the consuming application's runtime.
+Changing bundled defaults requires a rebuild; changing an individual orb uses
+its documented properties. An installed package does not load configuration
+from the consumer's working directory.
+
 ## Speech and language
 
 The `speech` property has no default text. `WebSpeechAdapter` uses Brazilian

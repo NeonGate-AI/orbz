@@ -9,6 +9,7 @@ function resolveProjectPath(relativePath: string): string {
 export default defineConfig({
   resolve: {
     alias: {
+      '@configuration': resolveProjectPath('./src/orbz.config.json'),
       '@core': resolveProjectPath('./src/core'),
       '@element': resolveProjectPath('./src/element'),
       '@factories': resolveProjectPath('./src/factories'),

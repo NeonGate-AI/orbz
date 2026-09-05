@@ -8,3 +8,5 @@ surface; ADR-0011 adds the explicit public npx installer exception; ADR-0012 add
 
 Use [`template.md`](./template.md) for new decisions. Never rewrite an accepted
 ADR to hide a changed decision; record the update and supersede it explicitly.
+
+[ADR-0013](0013-canonical-json-configuration.adr.md) establishes the single JSON source and derived typed configuration.
