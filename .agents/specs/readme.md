@@ -15,15 +15,26 @@ Statuses are `Proposed`, `In progress`, `Implemented`, `Superseded`, and
 
 | Spec | Status | Scope |
 | --- | --- | --- |
-| [SPEC-016](016-orb-cli-parity.spec.md) | Implemented; behavioral validation deferred | Engineering CLI ergonomics |
-| [SPEC-017](017-canonical-json-configuration.spec.md) | Implemented; live validation deferred | Canonical JSON configuration |
+| [SPEC-016](016-orb-cli-parity.spec.md) | Implemented; automated validation passed | Engineering CLI ergonomics |
+| [SPEC-017](017-canonical-json-configuration.spec.md) | Implemented; automated validation passed | Canonical JSON configuration |
 | [SPEC-018](018-voice-model-property.spec.md) | Implemented; browser/provider validation deferred | Native voice model selection and direct Realtime audio |
-| [SPEC-019](019-typed-configuration-transformer.spec.md) | Implemented; behavioral validation deferred | Pure validated configuration transformer |
-| [SPEC-020](020-complete-data-configuration-migration.spec.md) | Implemented; audit execution deferred | Remaining configuration migration and source inventory |
-| [SPEC-021](021-application-owned-credentials.spec.md) | Implemented; behavioral validation deferred | Application credential ownership and strict session options |
+| [SPEC-019](019-typed-configuration-transformer.spec.md) | Implemented; automated validation passed | Pure validated configuration transformer |
+| [SPEC-020](020-complete-data-configuration-migration.spec.md) | Implemented; audit validation passed | Remaining configuration migration and source inventory |
+| [SPEC-021](021-application-owned-credentials.spec.md) | Implemented; automated validation passed | Application credential ownership and strict session options |
+| [SPEC-022](022-align-readme-with-configuration-and-voice.spec.md) | Implemented; documentation review passed | README alignment for configuration, voice and credential ownership |
 
-The owner requested one specification and implementation per open PR. These review branches are not releases and must not be merged automatically. Compilation/syntax evidence is separate from deferred behavioral and live-provider acceptance.
+The owner requested one specification and implementation per PR. On 2026-09-05,
+the owner additionally authorized validation, conflict repair and merging eligible
+PRs into staging. This supersedes the earlier instruction to leave every PR open
+and defer validation; the earlier evidence records remain historical. If a
+validation cannot be resolved in roughly ten minutes, park that PR and continue
+with another eligible PR. Do not merge a PR with unresolved required validation.
 
-Dependency order for review: SPEC-016 → SPEC-017 → SPEC-019 → SPEC-018 → SPEC-020. Each PR is based on its predecessor, with one new spec and its implementation in the diff.
+Dependency order: SPEC-016 → SPEC-017 → SPEC-019 → SPEC-018 → SPEC-020 → SPEC-021
+→ SPEC-022. Each PR starts from its predecessor. Integration may retarget a PR
+once its dependency is merged. This order is a plan, not a claim that merges have
+occurred. A staging merge does not authorize version changes, tags or npm publication.
 
-SPEC-021 follows SPEC-020 as a separate credential-boundary correction PR.
+The table describes recorded implementation evidence. Compilation/syntax checks,
+behavioral tests and live-provider acceptance are distinct; update validation
+status only when the corresponding evidence is available.

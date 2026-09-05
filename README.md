@@ -23,8 +23,10 @@ provider-neutral speech boundary. The package renders the native `<orb-z>`
 element. Applications own the persona, transcript UI, session authorization,
 and backend integrations.
 
-The configuration and `voiceModel` APIs below are implemented on these review
-branches. They have not been published to npm; the package version remains 0.4.3.
+The configuration, `voiceModel` and CLI additions below are implemented in this
+source checkout and have not been published to npm. The package version remains
+0.4.3. Installing the current npm package does not include these additions; fork
+and rebuild this source to use them before a release.
 
 - [Documentation](https://orbz.site)
 - [npm package](https://www.npmjs.com/package/@neongate-ai/orbz)
@@ -201,6 +203,9 @@ from the consumer's working directory.
 
 Assign a typed JavaScript property on the native element; object configuration
 is not serialized into an HTML attribute. Selecting a provider is silent.
+`provider` chooses the adapter, `model` chooses the provider model, and `voice`
+chooses its supported speaker voice. Model and voice availability are enforced
+by the application server and provider.
 
 ```ts
 import type { OrbzElement } from '@neongate-ai/orbz'
@@ -229,7 +234,19 @@ document.querySelector('#stop')!.addEventListener('click', () => {
 })
 ```
 
-Provide visible Start, Interrupt, and End buttons with those IDs outside the orb.
+Run this setup after the element and controls exist in the document. Provide
+visible controls outside the orb, with application-localized labels:
+
+```html
+<orb-z role="img" aria-label="Voice assistant"></orb-z>
+<button id="start" type="button">Start conversation</button>
+<button id="interrupt" type="button">Interrupt response</button>
+<button id="stop" type="button">End conversation</button>
+```
+
+The application must also display conversation status, startup errors and a text
+alternative using the events below. The orb's animation alone does not supply
+those accessible messages.
 
 | Provider | Activation | Application supplies |
 | --- | --- | --- |
@@ -653,10 +670,16 @@ under `test/`. The intentional package payload is `dist/`, the POSIX shell
 
 ## Release review
 
-SPEC-016 through SPEC-020 are separate review PRs. These changes are a candidate
-for the first 1.0 release; versioning, merge order, behavioral validation and
-publication remain a separate owner decision. This work does not change the
-package version, create a release tag, or publish to npm.
+SPEC-016 through SPEC-022 track these changes and their evidence in the
+[specification catalog](./.agents/specs/readme.md). The owner authorized validation,
+conflict resolution and merging eligible PRs into staging. An unresolved validation
+blocks that PR's merge; another eligible PR may proceed while the issue is parked.
+The catalog records dependency order and distinguishes executed checks from
+outstanding behavioral or live-provider acceptance.
+
+These changes are a candidate for the first 1.0 release. A staging merge does not
+publish a package. Version selection, release tags and npm publication remain a
+separate owner decision; this documentation change performs none of them.
 
 ## License
 
