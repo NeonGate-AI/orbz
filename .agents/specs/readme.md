@@ -10,3 +10,10 @@ the explicit npx project-setup flow. SPEC-015 strengthens skill/rule discoverabi
 Statuses are `Proposed`, `In progress`, `Implemented`, `Superseded`, and
 `Rejected`. Use [`template.md`](./template.md), follow
 [`workflow.md`](./workflow.md), and link applicable ADRs and rules.
+
+## Current documentation delivery
+
+- [SPEC-022](./022-refine-readme-presentation.spec.md): proposed formatting-only
+  README refinement with content preservation and review/audit evidence.
+- IDs 016 through 021 are already allocated on independent open delivery branches;
+  this documentation delivery does not replace or implement those specs.
