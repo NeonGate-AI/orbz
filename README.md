@@ -23,10 +23,14 @@ provider-neutral speech boundary. The package renders the native `<orb-z>`
 element; it does not ship a framework wrapper, application, persona, transcript,
 or backend.
 
-- [Documentation](https://orbz.site)
-- [npm package](https://www.npmjs.com/package/@neongate-ai/orbz)
-- [Framework examples](https://github.com/NeonGate-AI/orbz-examples)
-- [License](./LICENSE)
+<p align="center">
+  <a href="https://orbz.site"><strong>Documentation</strong></a>&nbsp;&nbsp;&nbsp;
+  <a href="https://www.npmjs.com/package/@neongate-ai/orbz"><strong>npm package</strong></a>&nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/NeonGate-AI/orbz-examples"><strong>Framework examples</strong></a>&nbsp;&nbsp;&nbsp;
+  <a href="./LICENSE"><strong>License</strong></a>
+</p>
+
+<br>
 
 ## Getting started
 
@@ -152,6 +156,8 @@ orb --help
 Orb requires an environment with `/bin/sh` (Linux, macOS, WSL, or another
 POSIX-compatible shell environment).
 
+<br>
+
 ## Speech and language
 
 The `speech` property has no default text. `WebSpeechAdapter` uses Brazilian
@@ -254,7 +260,7 @@ Set `preset` to use one of the last five-color of the year palettes.
 The default palette is `neongate`. Omitting `preset` also allows individual
 color overrides to merge with that default palette.
 
-## Custom palette
+### Custom palette
 
 Provide all or part of a palette with color attributes:
 
@@ -276,7 +282,7 @@ Do not combine an explicit `preset` with custom color attributes. The preset
 wins, custom attributes are ignored, and Orbz reports the conflict through
 `console.error` so configuration mistakes are visible.
 
-## Size, motion, and presentation
+### Size, motion, and presentation
 
 ```html
 <orb-z
@@ -360,7 +366,7 @@ the typed API because a host class cannot style the closed shadow tree; use
 presets and documented properties for appearance, and an outer element for page
 layout.
 
-## Package entry points
+### Package entry points
 
 | Import | Purpose |
 | --- | --- |
@@ -370,6 +376,8 @@ layout.
 | `@neongate-ai/orbz/standalone` | Direct-browser/CDN bundle. |
 | `@neongate-ai/orbz/index.css` | Explicit stylesheet export. |
 | `orb` package binary | POSIX shell project installer used by `npx @neongate-ai/orbz`. |
+
+<br>
 
 ## Contributing
 
@@ -438,7 +446,7 @@ Measure the pinned maturity model locally with:
 
 CI independently enforces Harness Score `1.5.2` at maturity level L4.
 
-## Git quality gates and semantic versioning
+### Git quality gates and semantic versioning
 
 Run the Git setup after installing dependencies:
 
@@ -480,12 +488,17 @@ Tests live next to the source they verify; shared test setup and fixtures remain
 under `test/`. The intentional package payload is `dist/`, the POSIX shell
 `cli/`, and npm's standard root metadata.
 
-## Next versions 
+<br>
+
+## Next versions
+
 I'm working on provide a IoC so you can pass your own voice model, less robotic. Newer OpenAI models like [GPT-Realtime-2](https://developers.openai.com/api/docs/models/gpt-realtime-2) has more human-like voice sound.
+
+<br>
 
 ## License
 
-#MIT © NeonGate AI
+**#MIT © NeonGate AI**
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

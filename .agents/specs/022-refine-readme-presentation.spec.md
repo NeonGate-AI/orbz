@@ -1,10 +1,12 @@
 # SPEC-022: Refine README presentation without changing content
 
-- Status: Proposed
+- Status: Implemented
 - Created: 2026-09-05
 - Updated: 2026-09-05
 - Mode: Prospective
 - Owner: Orbz maintainers
+- Approval: the current owner request explicitly authorizes this bounded contract
+  and its implementation through conditional PR merge.
 
 ## Problem
 
@@ -49,25 +51,37 @@ branches. This spec starts from staging commit
 
 ## Acceptance criteria
 
-- [ ] The four existing resource links render as a centered group with no new text.
-- [ ] Subordinate headings and major-section spacing improve scanning while labels,
+- [x] The four existing resource links render as a centered group with no new text.
+- [x] Subordinate headings and major-section spacing improve scanning while labels,
       section order and native anchors remain unchanged.
-- [ ] Parsed visible text, ordered links/images, inline code and table contents
+- [x] Parsed visible text, ordered links/images, inline code and table contents
       match the fixed base after whitespace normalization; fenced code matches
       exactly, including language and whitespace.
-- [ ] The documentation audit rejects missing/misordered resource links and
+- [x] The documentation audit rejects missing/misordered resource links and
       incorrect heading levels; the unmodified baseline fails the new checks.
-- [ ] The spec catalog and review workflow record the bounded change and the
+- [x] The spec catalog and review workflow record the bounded change and the
       content-preservation review procedure.
-- [ ] `./cli/orb check`, package inspection and independent final-head review pass.
+- [x] `./cli/orb check`, package inspection and independent implementation review pass.
 
 ## Evidence
 
 - Baseline: `25280faac6ba9932559f97e06ed72e8101a9806f:README.md`.
 - `README.md`, `.audits/documentation.audit.sh`, `.agents/workflows/review.md`.
-- Pending: rendered Markdown comparison, negative audit probes, full Orb check,
-  npm payload inspection and independent review. Final-head CI and merge evidence
-  belong to the PR rather than being claimed before the PR runs.
+- GFM rendering with Marked and Happy DOM preserved all normalized visible text,
+  19 ordered heading labels, 8 links, 5 images, 187 exact code spans/blocks and
+  98 table cells against the fixed base. Language and whitespace inside code
+  were compared without normalization.
+- The new documentation audit failed on the untouched baseline with five
+  presentation findings and passed on the implementation. Four isolated negative
+  probes were rejected: missing resource, reordered resources, changed resource
+  destination and incorrect subordinate heading level.
+- `./cli/orb check` passed: lint, both TypeScript checks, tests, both builds,
+  SemVer validation and all repository audits.
+- `npm pack --dry-run` passed, including its prepack gate; package contents
+  retain the existing distribution boundary.
+- Independent implementation review and `git diff --check` passed with no
+  blocking findings. Final-head review, CI/deployment status and merge evidence
+  are recorded in the PR before merge; completion here does not waive those gates.
 
 ## Related records
 

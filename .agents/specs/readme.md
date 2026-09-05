@@ -13,7 +13,7 @@ Statuses are `Proposed`, `In progress`, `Implemented`, `Superseded`, and
 
 ## Current documentation delivery
 
-- [SPEC-022](./022-refine-readme-presentation.spec.md): proposed formatting-only
+- [SPEC-022](./022-refine-readme-presentation.spec.md): implemented formatting-only
   README refinement with content preservation and review/audit evidence.
 - IDs 016 through 021 are already allocated on independent open delivery branches;
   this documentation delivery does not replace or implement those specs.
