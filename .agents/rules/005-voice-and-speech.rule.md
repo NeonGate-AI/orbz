@@ -22,3 +22,5 @@ globs:
 8. Dispatch public speaking and error events without exposing provider secrets.
 9. Provider adapters depend on consumer authorization, never embedded secrets. Permanent OpenAI keys stay server-side; Realtime audio travels directly between browser and provider.
 10. Keep output-only speech and live conversation behind separate ports. Stop/supersede/disconnect release media and fence stale events; do not automatically reconnect or retry paid work.
+11. Never add key/token/secret fields to element properties, HTML attributes or JSON. Validate and copy session endpoint options before retention at both component and adapter boundaries; `credentials` means Fetch policy only (ADR-0015).
+12. Browser instance references and private fields are not credential vaults. Permanent provider keys stay exclusively server-side; consumer callbacks authorize sessions and return SDP, not credentials.

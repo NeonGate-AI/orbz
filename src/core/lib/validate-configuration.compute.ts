@@ -49,8 +49,7 @@ export function readOrbzConfigurationSource(input: unknown): OrbzConfigurationSo
     'paused',
     'elevated',
     'preset',
-    'reduced-motion',
-    'voice-model'
+    'reduced-motion'
   ])
 
   const appearance = record(root.appearance, '$.appearance', [

@@ -22,3 +22,10 @@ The component emits bounded text/state events, while applications own visible
 transcripts, captions, consent, memory forwarding, and language switching.
 
 See ADR-0014 and SPEC-018 for lifecycle, authorization and pending live validation.
+
+ADR-0015/SPEC-021 make credential ownership explicit. No key/token property or
+voice configuration attribute exists. The session setter and direct adapter
+validate only public endpoint/fetch-policy options; callbacks return SDP.
+Application session cookies may be sent automatically by the browser, while
+permanent provider keys remain server-side. A JavaScript element reference is
+not separate secret storage and does not defend against compromised page scripts.

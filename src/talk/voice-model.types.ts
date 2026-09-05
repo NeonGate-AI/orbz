@@ -28,7 +28,7 @@ export interface OrbzOpenAIRealtimeVoiceModel {
   sessionTimeoutMs?: number
 }
 
-/** Assigning a selection is silent; only an explicit start method activates it. */
+/** Public configuration only, never keys/tokens. Assignment is silent. */
 export type OrbzVoiceModel =
   | OrbzWebSpeechVoiceModel
   | OrbzOpenAISpeechVoiceModel
@@ -41,13 +41,15 @@ export interface OrbzRealtimeSessionRequest {
   readonly signal: AbortSignal
 }
 
-/** The application authorizes a session on its server and returns the SDP answer. */
+/** The application authorizes on its server and returns SDP, never a key or token. */
 export type OrbzRealtimeSessionAuthorizer = (request: OrbzRealtimeSessionRequest) => Promise<string>
 
 export interface OrbzRealtimeSessionEndpoint {
-  /** POST receives JSON {sdp, model, voice}; return application/sdp text. */
+  /** Public application URL; no embedded bearer tokens. POST returns SDP text. */
   endpoint: string | URL
+  /** Fetch cookie policy only; never a credential value. */
   credentials?: RequestCredentials
+  /** Consumer-owned transport; keep permanent provider keys on the server. */
   fetch?: typeof globalThis.fetch
 }
 

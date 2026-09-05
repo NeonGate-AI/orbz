@@ -189,8 +189,10 @@ derived compatibility bindings; their data is maintained in JSON. Animation
 repeat uses the JSON string `"infinite"`, converted to runtime infinity only in
 the motion transition field.
 
-Provider/model identifiers are public configuration. Keep API keys, session
-tokens and authorization callbacks in the consuming application's runtime.
+Provider/model identifiers are public configuration. Permanent provider API keys
+stay exclusively on the consuming application's server. Application authentication
+and authorization callbacks remain consumer-owned; no key or token belongs in
+Orbz JSON, element properties or HTML attributes.
 Changing bundled defaults requires a rebuild; changing an individual orb uses
 its documented properties. An installed package does not load configuration
 from the consumer's working directory.
@@ -209,7 +211,10 @@ orb.voiceModel = {
   provider: 'openai-realtime',
   model: 'gpt-realtime-2'
 }
-orb.realtimeSession = { endpoint: '/api/voice/session' }
+orb.realtimeSession = {
+  endpoint: '/api/voice/session',
+  credentials: 'same-origin' // Fetch cookie policy, not a secret value.
+}
 
 document.querySelector('#start')!.addEventListener('click', () => {
   void orb.startConversation().catch(() => {
@@ -277,6 +282,34 @@ closing the component does not implement those backend responsibilities.
 rejects on failed startup. Microphone permission and audio playback depend on the
 browser's activation policy. The default startup timeout is 20 seconds; the
 configuration does not impose a conversation duration or pricing plan.
+
+### Credential ownership
+
+`orb` is a JavaScript reference to the element, not a separate secure vault.
+Properties do not automatically become HTML attributes, but a permanent key
+delivered to browser memory is still exposed to compromised page scripts.
+Keep it on the backend, including when using a custom adapter or callback.
+
+The component accepts public model settings and an application authorization
+boundary. A session endpoint object accepts only `endpoint`, Fetch `credentials`
+policy and an optional `fetch` function. Undeclared fields such as `apiKey`,
+`token`, `secret` or `headers` are rejected before retention; errors do not repeat
+supplied values. Both the element and standalone Realtime adapter use this rule.
+Use JavaScript properties for these settings; no `voice-model` attribute is supported.
+
+For cookie-based authentication, the application server can issue a Secure,
+HttpOnly session cookie. The browser sends it according to fetch policy; Orbz
+does not read its value. The backend authorizes the user and uses its own provider
+key to return an SDP answer. The cookie identifies the application session and
+must not contain the provider key. Origin/CSRF controls, quotas and remote session
+cleanup belong to the application.
+
+Custom authorizers/fetch functions remain application-owned code. Do not attach
+secrets to those functions or embed tokens in public URLs/options. The existing
+standalone speech adapter's `headers` option is for application endpoint transport
+and must never carry permanent provider keys. Orbz cannot inspect closures or
+prevent arbitrary application code from adding its own element properties.
+See [ADR-0015](./.agents/adrs/0015-application-owned-credentials.adr.md).
 
 | Event | Detail |
 | --- | --- |

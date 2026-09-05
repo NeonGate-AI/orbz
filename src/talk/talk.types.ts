@@ -58,6 +58,7 @@ export interface OpenAISpeechAdapterOptions {
   credentials?: RequestCredentials
   endpoint: string | URL
   fetch?: typeof globalThis.fetch
+  /** Application endpoint headers only; never permanent provider API keys. */
   headers?: Readonly<Record<string, string>>
   instructions?: string
   model?: OpenAISpeechModel
