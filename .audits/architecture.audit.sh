@@ -67,22 +67,25 @@ else
   pass 'no framework runtime wrapper source'
 fi
 
-if grep -F "'speech'" src/element/element.data.ts >/dev/null 2>&1; then
-  pass 'speech is observed by the custom element'
+if grep -F 'orbzConfiguration.component.observedAttributes' src/element/element.data.ts >/dev/null 2>&1 &&
+  grep -F '"speech"' src/orbz.config.json >/dev/null 2>&1; then
+  pass 'element observed attributes derive from canonical configuration'
 else
-  fail 'speech is not an observed attribute'
+  fail 'element observed attributes must derive from canonical configuration including speech'
 fi
 
-if grep -F "DEFAULT_SPEECH_LANGUAGE = 'pt-BR'" src/talk/talk.data.ts >/dev/null 2>&1; then
-  pass 'Web Speech default language contract is pt-BR'
+if grep -F 'DEFAULT_SPEECH_LANGUAGE = orbzConfiguration.speech.webSpeech.language' src/talk/talk.data.ts >/dev/null 2>&1 &&
+  grep -E '"language"[[:space:]]*:[[:space:]]*"pt-BR"' src/orbz.config.json >/dev/null 2>&1; then
+  pass 'Web Speech default language derives from canonical pt-BR configuration'
 else
-  fail 'default speech language is not pt-BR'
+  fail 'default speech language must derive from canonical pt-BR configuration'
 fi
 
-if grep -E '(Hi,|Hello|Welcome to|How can I help|I am not able)' src/talk/talk.data.ts >/dev/null 2>&1; then
-  fail 'default talk data contains packaged conversation copy'
+if grep -E '"talk"[[:space:]]*:[[:space:]]*\{[[:space:]]*\}' src/orbz.config.json >/dev/null 2>&1 &&
+  grep -E '"defaultTalkFlow"[[:space:]]*:[[:space:]]*\[[[:space:]]*\]' src/orbz.config.json >/dev/null 2>&1; then
+  pass 'canonical default talk data contains no packaged conversation copy'
 else
-  pass 'default talk data contains no packaged conversation copy'
+  fail 'canonical default talk data must be an empty record and empty flow'
 fi
 
 if [ "$failures" -ne 0 ]; then

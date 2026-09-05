@@ -19,5 +19,8 @@ Statuses are `Proposed`, `In progress`, `Implemented`, `Superseded`, and
 | [SPEC-017](017-canonical-json-configuration.spec.md) | Implemented; live validation deferred | Canonical JSON configuration |
 | [SPEC-018](018-voice-model-property.spec.md) | Implemented; browser/provider validation deferred | Native voice model selection and direct Realtime audio |
 | [SPEC-019](019-typed-configuration-transformer.spec.md) | Implemented; behavioral validation deferred | Pure validated configuration transformer |
+| [SPEC-020](020-complete-data-configuration-migration.spec.md) | Implemented; audit execution deferred | Remaining configuration migration and source inventory |
 
 The owner requested one specification and implementation per open PR. These review branches are not releases and must not be merged automatically. Compilation/syntax evidence is separate from deferred behavioral and live-provider acceptance.
+
+Dependency order for review: SPEC-016 → SPEC-017 → SPEC-019 → SPEC-018 → SPEC-020. Each PR is based on its predecessor, with one new spec and its implementation in the diff.

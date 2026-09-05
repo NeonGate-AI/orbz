@@ -173,8 +173,12 @@ into the library, so loading an orb does not fetch a configuration file.
 | `speech` | Web Speech, OpenAI text-to-speech and empty talk-flow defaults |
 | `realtime` | OpenAI Realtime model, voice, timeouts and event bounds |
 
-Core appearance and motion are connected in this foundation. Subsequent PRs
-connect the remaining speech, element and animation consumers.
+Appearance, motion, element attributes, speech adapters, talk defaults and
+Realtime settings read this source. Legacy `.data.ts` exports remain derived
+compatibility views. The [migration inventory](./.audits/configuration.inventory.md)
+maps the original bindings to JSON paths; `orb audit` discovers the new
+configuration guard automatically. Mutable registries, algorithms, protocol
+identifiers and compile-time types retain their place in code.
 
 The exported `orbzConfiguration` is readonly. `transformOrbzConfiguration(input)`
 validates a complete configuration, clones it, derives runtime values and freezes
