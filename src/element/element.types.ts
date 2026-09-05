@@ -58,8 +58,10 @@ export interface OrbzElement extends HTMLElement {
   set talkFlow(value: readonly OrbzTalkStep[] | undefined)
   get voiceEngine(): OrbzVoiceEnginePort | undefined
   set voiceEngine(value: OrbzVoiceEnginePort | undefined)
+  /** Public model options only; this property is not reflected into attributes. */
   get voiceModel(): Readonly<OrbzVoiceModel> | undefined
   set voiceModel(value: OrbzVoiceModel | null | undefined)
+  /** Application authorization boundary; never pass provider keys or tokens. */
   get realtimeSession(): OrbzRealtimeSession | undefined
   set realtimeSession(value: OrbzRealtimeSession | undefined)
   pause(): void

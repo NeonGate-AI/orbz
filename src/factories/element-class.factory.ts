@@ -32,6 +32,7 @@ import {
   createOrbzConversation,
   createOrbzVoiceEngine
 } from '@services/voice-model.service'
+import { normalizeRealtimeSession } from '@talk/normalize-realtime-session.compute'
 import { normalizeVoiceModel } from '@talk/normalize-voice-model.compute'
 import { DEFAULT_TALK_FLOW } from '@talk/talk.data'
 import type { OrbzTalkContext, OrbzTalkStep } from '@talk/talk.types'
@@ -173,16 +174,9 @@ export function orbzElementClassFactory(): OrbzElementConstructor | undefined {
     }
 
     set realtimeSession(value: OrbzRealtimeSession | undefined) {
-      if (value !== undefined && typeof value !== 'function') {
-        if (!value || !String(value.endpoint ?? '').trim()) {
-          throw new TypeError(
-            'Orbz realtimeSession requires an authorizer or application endpoint.'
-          )
-        }
-        value = Object.freeze({ ...value, endpoint: String(value.endpoint) })
-      }
+      const session = normalizeRealtimeSession(value)
       this.stopConversation()
-      this.#realtimeSession = value
+      this.#realtimeSession = session
     }
 
     get conversationState(): OrbzConversationState {

@@ -5,6 +5,7 @@ import type {
   OrbzConversationState
 } from '@ports/conversation.port'
 
+import { normalizeRealtimeSession } from './normalize-realtime-session.compute'
 import type {
   OpenAIRealtimeAdapterOptions,
   OrbzRealtimeSession,
@@ -44,10 +45,11 @@ export class OpenAIRealtimeAdapter implements OrbzConversationPort {
 
   constructor(options: OpenAIRealtimeAdapterOptions) {
     const defaults = orbzConfiguration.realtime.openai
-    this.#session = options.session
-    if (typeof options.session !== 'function' && !String(options.session?.endpoint ?? '').trim()) {
+    const session = normalizeRealtimeSession(options.session)
+    if (!session) {
       throw new TypeError('OpenAI Realtime requires an application session authorizer or endpoint.')
     }
+    this.#session = session
     this.#model = options.model?.trim() || defaults.model
     this.#voice = options.voice?.trim() || defaults.voice
     const timeout = options.sessionTimeoutMs ?? defaults.sessionTimeoutMs

@@ -12,3 +12,5 @@ ADR to hide a changed decision; record the update and supersede it explicitly.
 [ADR-0013](0013-canonical-json-configuration.adr.md) establishes the single JSON source and derived typed configuration.
 
 [ADR-0014](0014-voice-model-and-realtime-port.adr.md) separates voice selection, live audio lifecycle and application-owned session authorization.
+
+[ADR-0015](0015-application-owned-credentials.adr.md) keeps permanent provider keys server-side and forbids secret-bearing element/JSON/session configuration.
