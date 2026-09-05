@@ -24,3 +24,16 @@ properties, attributes, methods, and events rather than private descendants.
 Pure data and types do not depend on DOM services. Services depend on ports,
 not provider credentials. Browser registration is isolated from the main entry
 point. No framework runtime is part of the package.
+
+## Configuration and voice selection
+
+`src/orbz.config.json` is the authored public configuration. A pure transformer
+validates, clones, derives runtime values and freezes them before use. Runtime
+credentials, callbacks and mutable browser objects remain outside this data.
+Existing uppercase exports are derived compatibility views (ADR-0013).
+
+A native `voiceModel` property selects inert adapters through a service.
+`OrbzVoiceEnginePort` handles output-only speech; `OrbzConversationPort` handles
+live audio lifecycle and bounded state/transcript events. Realtime SDP setup
+uses application authorization, followed by direct browser/OpenAI WebRTC.
+No memory runtime, persona, framework wrapper or backend ships here (ADR-0014).

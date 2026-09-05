@@ -17,6 +17,7 @@ Statuses are `Proposed`, `In progress`, `Implemented`, `Superseded`, and
 | --- | --- | --- |
 | [SPEC-016](016-orb-cli-parity.spec.md) | Implemented; behavioral validation deferred | Engineering CLI ergonomics |
 | [SPEC-017](017-canonical-json-configuration.spec.md) | Implemented; live validation deferred | Canonical JSON configuration |
+| [SPEC-018](018-voice-model-property.spec.md) | Implemented; browser/provider validation deferred | Native voice model selection and direct Realtime audio |
 | [SPEC-019](019-typed-configuration-transformer.spec.md) | Implemented; behavioral validation deferred | Pure validated configuration transformer |
 
 The owner requested one specification and implementation per open PR. These review branches are not releases and must not be merged automatically. Compilation/syntax evidence is separate from deferred behavioral and live-provider acceptance.
