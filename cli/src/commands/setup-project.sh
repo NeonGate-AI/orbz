@@ -11,16 +11,19 @@ orb_dry_run=false
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --project)
+      orb_require_option_value "$1" "${2:-}"
       shift
       [ "$#" -gt 0 ] || orb_die '--project requires a directory.' 2
       orb_target_dir=$1
       ;;
     --package-manager)
+      orb_require_option_value "$1" "${2:-}"
       shift
       [ "$#" -gt 0 ] || orb_die '--package-manager requires npm, pnpm, yarn, or bun.' 2
       orb_package_manager=$1
       ;;
     --package-spec)
+      orb_require_option_value "$1" "${2:-}"
       shift
       [ "$#" -gt 0 ] || orb_die '--package-spec requires a package specifier.' 2
       orb_package_spec=$1
@@ -32,6 +35,7 @@ while [ "$#" -gt 0 ]; do
       orb_dry_run=true
       ;;
     --help|-h)
+      [ "$#" -eq 1 ] || orb_die 'Project setup help does not accept additional arguments.' 2
       cat <<'HELP'
 Usage:
   npx -y --package=@neongate-ai/orbz@latest orb

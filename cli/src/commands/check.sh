@@ -14,7 +14,7 @@ validation, and all versioned repository audits.
 HELP
     exit 0
     ;;
-  '') ;;
+  '') [ "$#" -eq 0 ] || orb_die 'Check does not accept arguments.' 2 ;;
   *) orb_die "Unknown check option: $1" 2 ;;
 esac
 

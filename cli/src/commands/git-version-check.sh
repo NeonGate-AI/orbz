@@ -7,6 +7,7 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     --staged) staged=true ;;
     --help|-h)
+      [ "$#" -eq 1 ] || orb_die 'Version-check help does not accept additional arguments.' 2
       printf 'Usage: orb git version-check [--staged]\n'
       exit 0
       ;;

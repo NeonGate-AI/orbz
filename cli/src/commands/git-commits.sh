@@ -13,6 +13,7 @@ while [ "$#" -gt 0 ]; do
       mode=last
       ;;
     --from)
+      orb_require_option_value "$1" "${2:-}"
       shift
       [ "$#" -gt 0 ] || orb_die '--from requires a Git reference.' 2
       [ -z "$mode" ] || [ "$mode" = range ] || orb_die 'Choose either --last or --from/--to.' 2
@@ -20,6 +21,7 @@ while [ "$#" -gt 0 ]; do
       from_ref=$1
       ;;
     --to)
+      orb_require_option_value "$1" "${2:-}"
       shift
       [ "$#" -gt 0 ] || orb_die '--to requires a Git reference.' 2
       [ -z "$mode" ] || [ "$mode" = range ] || orb_die 'Choose either --last or --from/--to.' 2
@@ -27,6 +29,7 @@ while [ "$#" -gt 0 ]; do
       to_ref=$1
       ;;
     --help|-h)
+      [ "$#" -eq 1 ] || orb_die 'Git commits help does not accept additional arguments.' 2
       cat <<'USAGE'
 Usage:
   orb git commits --last

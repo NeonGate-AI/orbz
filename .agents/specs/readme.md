@@ -11,9 +11,17 @@ Statuses are `Proposed`, `In progress`, `Implemented`, `Superseded`, and
 `Rejected`. Use [`template.md`](./template.md), follow
 [`workflow.md`](./workflow.md), and link applicable ADRs and rules.
 
+## Configuration and voice delivery
+
+| Spec | Status | Scope |
+| --- | --- | --- |
+| [SPEC-016](016-orb-cli-parity.spec.md) | Implemented; behavioral validation deferred | Engineering CLI ergonomics |
+
+The owner requested one specification and implementation per open PR. These review branches are not releases and must not be merged automatically. Compilation/syntax evidence is separate from deferred behavioral and live-provider acceptance.
+
 ## Current documentation delivery
 
 - [SPEC-022](./022-refine-readme-presentation.spec.md): implemented formatting-only
   README refinement with content preservation and review/audit evidence.
-- IDs 016 through 021 are already allocated on independent open delivery branches;
+- IDs 016 through 021 are already allocated to independent feature deliveries;
   this documentation delivery does not replace or implement those specs.

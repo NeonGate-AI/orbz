@@ -2,6 +2,14 @@
 set -eu
 . "$ORB_CLI_DIR/core/common.sh"
 
+if [ "$#" -eq 1 ] && { [ "$1" = --help ] || [ "$1" = -h ]; }; then
+  if orb_is_repository_source; then
+    "$ORB_CLI_DIR/commands/setup-launcher.sh" --help
+    printf '\n'
+  fi
+  exec "$ORB_CLI_DIR/commands/setup-project.sh" --help
+fi
+
 orb_setup_mode=auto
 for orb_setup_argument in "$@"; do
   case "$orb_setup_argument" in

@@ -25,6 +25,9 @@ APIs, workflows for CI/deployment, and release metadata remain unchanged.
 SPEC-016 through SPEC-021 are already allocated on independent open delivery
 branches. This spec starts from staging commit
 `25280faac6ba9932559f97e06ed72e8101a9806f` and does not implement those deliveries.
+During PR preparation, SPEC-016 merged into staging. The formatting branch
+preserves that upstream README text and uses integration base
+`af84fd748c97d6c63d29b34ee5dde8bde3589a00` for its final content comparison.
 
 ## Requirements
 
@@ -65,11 +68,12 @@ branches. This spec starts from staging commit
 
 ## Evidence
 
-- Baseline: `25280faac6ba9932559f97e06ed72e8101a9806f:README.md`.
+- Initial baseline: `25280faac6ba9932559f97e06ed72e8101a9806f:README.md`.
+- Final integration baseline: `af84fd748c97d6c63d29b34ee5dde8bde3589a00:README.md`.
 - `README.md`, `.audits/documentation.audit.sh`, `.agents/workflows/review.md`.
 - GFM rendering with Marked and Happy DOM preserved all normalized visible text,
-  19 ordered heading labels, 8 links, 5 images, 187 exact code spans/blocks and
-  98 table cells against the fixed base. Language and whitespace inside code
+  19 ordered heading labels, 8 links, 5 images, 193 exact code spans/blocks and
+  98 table cells against the final integration base. Language and whitespace inside code
   were compared without normalization.
 - The new documentation audit failed on the untouched baseline with five
   presentation findings and passed on the implementation. Four isolated negative
@@ -77,6 +81,8 @@ branches. This spec starts from staging commit
   destination and incorrect subordinate heading level.
 - `./cli/orb check` passed: lint, both TypeScript checks, tests, both builds,
   SemVer validation and all repository audits.
+- The integrated branch also passed `./cli/orb check` after retaining SPEC-016's
+  README additions and resolving the spec-catalog conflict without dropping its entry.
 - `npm pack --dry-run` passed, including its prepack gate; package contents
   retain the existing distribution boundary.
 - Independent implementation review and `git diff --check` passed with no

@@ -9,7 +9,7 @@ case "${1:-}" in
     printf 'Usage: orb typecheck\n'
     exit 0
     ;;
-  '') ;;
+  '') [ "$#" -eq 0 ] || orb_die 'Typecheck does not accept arguments.' 2 ;;
   *) orb_die "Unknown typecheck option: $1" 2 ;;
 esac
 
