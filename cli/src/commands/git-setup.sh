@@ -8,7 +8,7 @@ case "${1:-}" in
     printf 'Usage: orb git setup\n'
     exit 0
     ;;
-  '') ;;
+  '') [ "$#" -eq 0 ] || orb_die 'Git setup does not accept arguments.' 2 ;;
   *) orb_die "Unknown git setup option: $1" 2 ;;
 esac
 

@@ -6,6 +6,7 @@ orb_require_repository_source
 mode=lint
 case "${1:-}" in
   --help|-h)
+    [ "$#" -eq 1 ] || orb_die 'Lint help does not accept additional arguments.' 2
     cat <<'USAGE'
 Usage:
   orb lint
@@ -21,7 +22,7 @@ USAGE
     ;;
   --write) mode=write ;;
   --staged) mode=staged ;;
-  '') ;;
+  '') [ "$#" -eq 0 ] || orb_die 'Lint does not accept an empty mode.' 2 ;;
   *) orb_die "Unknown lint option: $1" 2 ;;
 esac
 

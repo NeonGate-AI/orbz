@@ -8,7 +8,7 @@ case "${1:-}" in
     printf 'Usage: orb audit\n'
     exit 0
     ;;
-  '') ;;
+  '') [ "$#" -eq 0 ] || orb_die 'Audit does not accept arguments.' 2 ;;
   *) orb_die "Unknown audit option: $1" 2 ;;
 esac
 
