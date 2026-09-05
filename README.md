@@ -139,7 +139,11 @@ npx -y --package=@neongate-ai/orbz@latest orb --dry-run
 Repository engineering commands such as `orb test`, `orb check`, `orb audit`,
 and `orb git ...` intentionally work only from an Orbz source checkout. From a
 checkout, use `./cli/orb help` or install the optional user launcher with
-`pnpm run setup`.
+`pnpm run setup`. Scoped help is available through `orb help build`,
+`orb help git lint` or `orb git lint --help`. Use `--logs` before or after
+a command (including nested Git commands) for diagnostics. Repository
+`orb install` is an alias for dependency bootstrap; consumer installation
+continues to use `orb setup`.
 
 If you explicitly want `orb` available on your global `PATH`, install the package
 globally instead of using npx:

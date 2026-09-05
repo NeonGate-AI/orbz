@@ -10,3 +10,11 @@ the explicit npx project-setup flow. SPEC-015 strengthens skill/rule discoverabi
 Statuses are `Proposed`, `In progress`, `Implemented`, `Superseded`, and
 `Rejected`. Use [`template.md`](./template.md), follow
 [`workflow.md`](./workflow.md), and link applicable ADRs and rules.
+
+## Configuration and voice delivery
+
+| Spec | Status | Scope |
+| --- | --- | --- |
+| [SPEC-016](016-orb-cli-parity.spec.md) | Implemented; behavioral validation deferred | Engineering CLI ergonomics |
+
+The owner requested one specification and implementation per open PR. These review branches are not releases and must not be merged automatically. Compilation/syntax evidence is separate from deferred behavioral and live-provider acceptance.

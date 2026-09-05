@@ -14,18 +14,23 @@ while [ "$#" -gt 0 ]; do
       orb_lint_mode=last
       ;;
     --from)
+      orb_require_option_value "$1" "${2:-}"
+      [ "$orb_lint_mode" != last ] || orb_die 'Choose either --last or --from/--to.' 2
       shift
       [ "$#" -gt 0 ] || orb_die '--from requires a Git revision.' 2
       orb_from=$1
       orb_lint_mode=range
       ;;
     --to)
+      orb_require_option_value "$1" "${2:-}"
+      [ "$orb_lint_mode" != last ] || orb_die 'Choose either --last or --from/--to.' 2
       shift
       [ "$#" -gt 0 ] || orb_die '--to requires a Git revision.' 2
       orb_to=$1
       orb_lint_mode=range
       ;;
     --help|-h)
+      [ "$#" -eq 1 ] || orb_die 'Git lint help does not accept additional arguments.' 2
       cat <<'HELP'
 Usage:
   orb git lint --last

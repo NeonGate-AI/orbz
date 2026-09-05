@@ -7,6 +7,7 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     --ci) ci=true ;;
     --help|-h)
+      [ "$#" -eq 1 ] || orb_die 'Git doctor help does not accept additional arguments.' 2
       printf 'Usage: orb git doctor [--ci]\n'
       exit 0
       ;;

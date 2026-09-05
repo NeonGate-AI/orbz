@@ -10,7 +10,16 @@ orb_die() {
   orb_message=$1
   orb_status=${2:-1}
   orb_print_error "Orb: $orb_message"
+  if [ "$orb_status" -eq 2 ] && [ -n "${ORB_HELP_TOPIC:-}" ]; then
+    printf "Run 'orb help %s' for usage.\n" "$ORB_HELP_TOPIC" >&2
+  fi
   exit "$orb_status"
+}
+
+orb_require_option_value() {
+  case "${2:-}" in
+    ''|-*) orb_die "$1 requires a value." 2 ;;
+  esac
 }
 
 orb_warn() {
