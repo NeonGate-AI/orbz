@@ -23,10 +23,9 @@ provider-neutral speech boundary. The package renders the native `<orb-z>`
 element. Applications own the persona, transcript UI, session authorization,
 and backend integrations.
 
-The configuration, `voiceModel` and CLI additions below are implemented in this
-source checkout and have not been published to npm. The package version remains
-0.4.3. Installing the current npm package does not include these additions; fork
-and rebuild this source to use them before a release.
+This source describes the **1.0.0** release, including canonical configuration,
+`voiceModel`, direct Realtime audio and the unified Orb CLI. Earlier npm versions
+do not include these additions. Check the npm version badge for publication status.
 
 <p align="center">
   <a href="https://orbz.site"><strong>Documentation</strong></a>&nbsp;&nbsp;&nbsp;
@@ -689,9 +688,18 @@ blocks that PR's merge; another eligible PR may proceed while the issue is parke
 The catalog records dependency order and distinguishes executed checks from
 outstanding behavioral or live-provider acceptance.
 
-These changes are a candidate for the first 1.0 release. A staging merge does not
-publish a package. Version selection, release tags and npm publication remain a
-separate owner decision; this documentation change performs none of them.
+SPEC-024 records the owner-authorized **1.0.0** release to `main`. The release
+workflow validates and packs the source, tags the exact commit, publishes that
+tarball, verifies npm integrity and creates the GitHub release. A tag alone does
+not confirm npm publication; check the release workflow and npm version badge.
+
+When upgrading from 0.4.3, applications keep provider credentials on their backend
+and supply short-lived session authorization through the JavaScript instance.
+Never put credentials in attributes or `orbz.config.json`. `realtimeSession`
+accepts only documented options and rejects unknown fields. Forks configure
+public defaults in `src/orbz.config.json` and rebuild; the JSON is bundled into
+the existing package entry points. Real microphone/provider acceptance remains
+separate from the automated tests.
 
 <br>
 

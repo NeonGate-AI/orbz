@@ -17,3 +17,23 @@ Use when preparing a patch, minor, or major Orbz release. Publishing remains a h
 13. After a human publishes, verify the registry version and `npx` binary.
 
 The runtime shell guard denies autonomous package publication and asks for approval on release-boundary Git operations.
+
+## Owner-authorized CI release
+
+SPEC-024 records explicit owner authorization for the first major release.
+`.github/workflows/release.yml` runs on main package metadata changes or manual
+dispatch from main. It performs the full prepack gate, rejects stale main heads
+and conflicting tags, and publishes the validated tarball. Matching published
+artifacts can be verified on retry; existing tags and npm versions are immutable.
+
+Configure npm trusted publishing for organization `NeonGate-AI`, repository
+`orbz`, workflow filename `release.yml`, no environment name, and allow direct
+`npm publish`. An existing repository secret `NPM_TOKEN` is also supported.
+Credentials are never committed or printed. See the
+[npm trusted publisher documentation](https://docs.npmjs.com/trusted-publishers/).
+
+The workflow creates the GitHub release only after npm integrity and the public
+Orb binary are verified. If npm authorization fails after tagging, the tag is
+retained and publication remains incomplete. Fix the account authorization and
+rerun the failed workflow; do not move the tag or bump a version to hide failure.
+Future releases require an owner-authorized version change or manual dispatch.

@@ -182,6 +182,66 @@ else
   fail 'default published setup fails for an existing dependency'
 fi
 
+# Exercise real commit topology: a merge-looking subject alone is not exempt.
+orb_history="$orb_tmp/history"
+mkdir -p "$orb_history/.agents" "$orb_history/.audits" "$orb_history/src"
+cp -R cli "$orb_history/"
+cp package.json commitlint.config.cjs "$orb_history/"
+touch "$orb_history/tsdown.config.ts"
+ln -s "$ROOT/node_modules" "$orb_history/node_modules"
+git -C "$orb_history" init -q
+orb_tree=$(git -C "$orb_history" mktree </dev/null)
+orb_fixture_commit() {
+  GIT_AUTHOR_NAME='Jonatas Sales' GIT_AUTHOR_EMAIL='sykes.echo@proton.me' \
+  GIT_COMMITTER_NAME='Jonatas Sales' GIT_COMMITTER_EMAIL='sykes.echo@proton.me' \
+    git -C "$orb_history" commit-tree "$orb_tree" "$@"
+}
+orb_base=$(printf 'chore: initial fixture\n' | orb_fixture_commit)
+orb_valid=$(printf 'fix: valid introduced change\n' | orb_fixture_commit -p "$orb_base")
+orb_long_body=$(printf '%0110d' 0)
+orb_invalid=$(printf "Merge branch 'fixture'\n\n%s\n" "$orb_long_body" | orb_fixture_commit -p "$orb_base")
+orb_good_merge=$(printf 'docs: merge valid branch\n\n%s\n' "$orb_long_body" | orb_fixture_commit -p "$orb_base" -p "$orb_valid")
+orb_bad_merge=$(printf 'docs: merge invalid branch\n' | orb_fixture_commit -p "$orb_base" -p "$orb_invalid")
+for orb_history_command in lint commits; do
+  git -C "$orb_history" update-ref HEAD "$orb_invalid"
+  if "$orb_history/cli/orb" git "$orb_history_command" --last >"$orb_tmp/history.log" 2>&1; then
+    fail "$orb_history_command accepts a non-merge with an invalid body"
+  elif grep -F 'body-max-line-length' "$orb_tmp/history.log" >/dev/null 2>&1; then
+    pass "$orb_history_command strictly checks a merge-looking non-merge"
+  else
+    fail "$orb_history_command failed for an unexpected reason"
+  fi
+  git -C "$orb_history" update-ref HEAD "$orb_good_merge"
+  for orb_history_mode in last range; do
+    if [ "$orb_history_mode" = last ]; then
+      set -- --last
+    else
+      set -- --from "$orb_base" --to HEAD
+    fi
+    if "$orb_history/cli/orb" git "$orb_history_command" "$@" >"$orb_tmp/history.log" 2>&1; then
+      pass "$orb_history_command $orb_history_mode accepts an integration envelope with valid changes"
+    else
+      fail "$orb_history_command $orb_history_mode rejects a valid introduced history"
+      cat "$orb_tmp/history.log" >&2
+    fi
+  done
+  git -C "$orb_history" update-ref HEAD "$orb_bad_merge"
+  for orb_history_mode in last range; do
+    if [ "$orb_history_mode" = last ]; then
+      set -- --last
+    else
+      set -- --from "$orb_base" --to HEAD
+    fi
+    if "$orb_history/cli/orb" git "$orb_history_command" "$@" >"$orb_tmp/history.log" 2>&1; then
+      fail "$orb_history_command $orb_history_mode hides an invalid introduced commit"
+    elif grep -F 'body-max-line-length' "$orb_tmp/history.log" >/dev/null 2>&1; then
+      pass "$orb_history_command $orb_history_mode rejects invalid introduced history"
+    else
+      fail "$orb_history_command $orb_history_mode failed for an unexpected reason"
+    fi
+  done
+done
+
 if [ "$failures" -ne 0 ]; then
   printf '\n%d CLI audit failure(s).\n' "$failures" >&2
   exit 1
