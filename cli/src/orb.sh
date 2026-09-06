@@ -23,6 +23,12 @@ orb_default_command() {
   fi
 }
 
+while [ "${1:-}" = --logs ]; do
+  ORB_LOGS=true
+  export ORB_LOGS
+  shift
+done
+
 if [ "$#" -eq 0 ]; then
   orb_command=$(orb_default_command)
 else
@@ -30,30 +36,25 @@ else
   shift
 fi
 
-if [ "$orb_command" = --logs ]; then
-  ORB_LOGS=true
-  export ORB_LOGS
-  if [ "$#" -eq 0 ]; then
-    orb_command=$(orb_default_command)
-  else
-    orb_command=$1
-    shift
-  fi
-fi
-
-if [ "${1:-}" = --logs ]; then
+while [ "${1:-}" = --logs ]; do
   ORB_LOGS=true
   export ORB_LOGS
   shift
-fi
+done
 
 orb_log "command=$orb_command"
+ORB_HELP_TOPIC=$orb_command
+export ORB_HELP_TOPIC
 
 case "$orb_command" in
   help|--help|-h)
     exec "$CLI_DIR/commands/help.sh" "$@"
     ;;
   version|--version|-V)
+    if [ "$#" -eq 1 ] && { [ "$1" = --help ] || [ "$1" = -h ]; }; then
+      printf 'Usage: orb version | --version | -V\n'
+      exit 0
+    fi
     [ "$#" -eq 0 ] || orb_usage_error 'Version does not accept arguments.'
     orb_version=$(orb_project_version 2>/dev/null || true)
     [ -n "$orb_version" ] || orb_die 'Unable to read the Orbz version.'
@@ -66,7 +67,7 @@ case "$orb_command" in
     orb_is_repository_source && orb_usage_error "Unknown option: $orb_command"
     exec "$CLI_DIR/commands/setup.sh" "$orb_command" "$@"
     ;;
-  bootstrap)
+  bootstrap|install)
     orb_require_repository_source
     exec "$CLI_DIR/commands/bootstrap.sh" "$@"
     ;;
@@ -112,7 +113,15 @@ case "$orb_command" in
     if [ "$#" -gt 0 ]; then
       shift
     fi
+    while [ "${1:-}" = --logs ]; do
+      ORB_LOGS=true
+      export ORB_LOGS
+      shift
+    done
+    orb_log "git subcommand=$orb_subcommand"
+    ORB_HELP_TOPIC="git${orb_subcommand:+ $orb_subcommand}"
     case "$orb_subcommand" in
+      ''|help|--help|-h) exec "$CLI_DIR/commands/help.sh" git "$@" ;;
       setup) exec "$CLI_DIR/commands/git-setup.sh" "$@" ;;
       doctor) exec "$CLI_DIR/commands/git-doctor.sh" "$@" ;;
       pre-commit) exec "$CLI_DIR/commands/git-pre-commit.sh" "$@" ;;
@@ -120,8 +129,18 @@ case "$orb_command" in
       lint) exec "$CLI_DIR/commands/git-lint.sh" "$@" ;;
       commits) exec "$CLI_DIR/commands/git-commits.sh" "$@" ;;
       commit)
-        [ "${1:-}" = message ] || orb_usage_error 'Usage: orb git commit message <message-file>'
+        case "${1:-}" in
+          ''|help|--help|-h) exec "$CLI_DIR/commands/help.sh" git commit "$@" ;;
+          message) ;;
+          *) orb_usage_error 'Usage: orb git commit message <message-file>' ;;
+        esac
         shift
+        ORB_HELP_TOPIC='git commit-message'
+        while [ "${1:-}" = --logs ]; do
+          ORB_LOGS=true
+          export ORB_LOGS
+          shift
+        done
         exec "$CLI_DIR/commands/git-commit-msg.sh" "$@"
         ;;
       version-check) exec "$CLI_DIR/commands/git-version-check.sh" "$@" ;;

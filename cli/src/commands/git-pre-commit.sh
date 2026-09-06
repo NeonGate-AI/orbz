@@ -8,7 +8,7 @@ case "${1:-}" in
     printf 'Usage: orb git pre-commit\n'
     exit 0
     ;;
-  '') ;;
+  '') [ "$#" -eq 0 ] || orb_die 'Git pre-commit does not accept arguments.' 2 ;;
   *) orb_die "Unknown pre-commit option: $1" 2 ;;
 esac
 

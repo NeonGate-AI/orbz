@@ -4,6 +4,7 @@ set -eu
 
 case "${1:-}" in
   --help|-h)
+    [ "$#" -eq 1 ] || orb_die 'Commit-message help does not accept additional arguments.' 2
     printf 'Usage: orb git commit-message <message-file>\n'
     exit 0
     ;;

@@ -34,11 +34,7 @@ export interface WebSpeechAdapterOptions {
   volume?: number
 }
 
-export type OpenAISpeechModel =
-  | 'gpt-4o-mini-tts'
-  | 'tts-1'
-  | 'tts-1-hd'
-  | (string & {})
+export type OpenAISpeechModel = 'gpt-4o-mini-tts' | 'tts-1' | 'tts-1-hd' | (string & {})
 
 export type OpenAISpeechVoice =
   | 'alloy'
@@ -56,20 +52,17 @@ export type OpenAISpeechVoice =
   | 'verse'
   | (string & {})
 
-export type OpenAISpeechFormat =
-  | 'aac'
-  | 'flac'
-  | 'mp3'
-  | 'opus'
-  | 'wav'
+export type OpenAISpeechFormat = 'aac' | 'flac' | 'mp3' | 'opus' | 'wav'
 
 export interface OpenAISpeechAdapterOptions {
   credentials?: RequestCredentials
   endpoint: string | URL
   fetch?: typeof globalThis.fetch
+  /** Application endpoint headers only; never permanent provider API keys. */
   headers?: Readonly<Record<string, string>>
   instructions?: string
   model?: OpenAISpeechModel
   responseFormat?: OpenAISpeechFormat
+  requestTimeoutMs?: number
   voice?: OpenAISpeechVoice
 }

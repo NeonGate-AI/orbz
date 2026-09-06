@@ -147,6 +147,9 @@ export class OrbzTalkRunnerService {
         await this.#speak(normalizedResponse.length > 0 ? normalizedResponse : step.fallback, run)
       }
     } catch (error) {
+      if (run !== this.#run) {
+        return
+      }
       this.#onError(error)
       await this.#speak(step.fallback, run)
     }
@@ -171,7 +174,9 @@ export class OrbzTalkRunnerService {
       await voiceEngine.speak(text)
       return true
     } catch (error) {
-      this.#onError(error)
+      if (run === this.#run && speech === this.#speech) {
+        this.#onError(error)
+      }
       return false
     } finally {
       if (run === this.#run && speech === this.#speech) {

@@ -6,6 +6,7 @@ orb_require_repository_source
 mode=run
 case "${1:-}" in
   --help|-h)
+    [ "$#" -eq 1 ] || orb_die 'Test help does not accept additional arguments.' 2
     cat <<'USAGE'
 Usage:
   orb test [vitest arguments]

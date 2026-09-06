@@ -8,7 +8,7 @@ case "${1:-}" in
     printf 'Usage: orb bootstrap\n'
     exit 0
     ;;
-  '') ;;
+  '') [ "$#" -eq 0 ] || orb_die 'Bootstrap does not accept arguments.' 2 ;;
   *) orb_die "Unknown bootstrap option: $1" 2 ;;
 esac
 

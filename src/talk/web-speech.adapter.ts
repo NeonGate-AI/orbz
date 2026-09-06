@@ -1,22 +1,11 @@
+import { orbzConfiguration } from '@core/config.data'
 import type { OrbzVoiceEnginePort } from '@ports/voice-engine.port'
 
-import { DEFAULT_SPEECH_LANGUAGE } from './talk.data'
 import type { WebSpeechAdapterOptions } from './talk.types'
 
 interface ActiveSpeech {
   cancel(): void
 }
-
-const DEFAULT_PREFERRED_VOICES = Object.freeze([
-  'Google português do Brasil',
-  'Microsoft Francisca Online',
-  'Microsoft Antonio Online',
-  'Português Brasil',
-  'Luciana',
-  'Felipe'
-])
-const DEFAULT_VOICE_LOAD_TIMEOUT = 1_500
-const SPEECH_START_TIMEOUT = 5_000
 
 export class WebSpeechAdapter implements OrbzVoiceEnginePort {
   #activeSpeech: ActiveSpeech | undefined
@@ -24,18 +13,24 @@ export class WebSpeechAdapter implements OrbzVoiceEnginePort {
   readonly #pitch: number
   readonly #preferredVoices: readonly string[]
   readonly #rate: number
+  #run = 0
+  #voiceLoadController: AbortController | undefined
   readonly #voiceLoadTimeoutMs: number
   readonly #volume: number
 
   constructor(options: WebSpeechAdapterOptions = {}) {
+    const defaults = orbzConfiguration.speech.webSpeech
     this.#language = normalizeLanguage(options.language)
-    this.#pitch = clamp(options.pitch ?? 1, 0, 2)
+    this.#pitch = clamp(options.pitch ?? defaults.pitch, 0, 2)
     this.#preferredVoices = Object.freeze([
-      ...(options.preferredVoices ?? DEFAULT_PREFERRED_VOICES)
+      ...(options.preferredVoices ?? defaults.preferredVoices)
     ])
-    this.#rate = clamp(options.rate ?? 1, 0.1, 10)
-    this.#voiceLoadTimeoutMs = Math.max(0, options.voiceLoadTimeoutMs ?? DEFAULT_VOICE_LOAD_TIMEOUT)
-    this.#volume = clamp(options.volume ?? 1, 0, 1)
+    this.#rate = clamp(options.rate ?? defaults.rate, 0.1, 10)
+    this.#voiceLoadTimeoutMs = Math.max(
+      0,
+      options.voiceLoadTimeoutMs ?? defaults.voiceLoadTimeoutMs
+    )
+    this.#volume = clamp(options.volume ?? defaults.volume, 0, 1)
   }
 
   async speak(text: string): Promise<void> {
@@ -53,7 +48,22 @@ export class WebSpeechAdapter implements OrbzVoiceEnginePort {
 
     this.stop()
 
-    const voices = await loadVoices(synthesis, this.#voiceLoadTimeoutMs)
+    const run = ++this.#run
+    const voiceLoadController = new AbortController()
+    this.#voiceLoadController = voiceLoadController
+    const voices = await loadVoices(
+      synthesis,
+      this.#voiceLoadTimeoutMs,
+      voiceLoadController.signal
+    ).finally(() => {
+      if (this.#voiceLoadController === voiceLoadController) {
+        this.#voiceLoadController = undefined
+      }
+    })
+    if (run !== this.#run) {
+      return
+    }
+
     const utterance = new Utterance(normalizedText)
     const voice = selectVoice(voices, this.#language, this.#preferredVoices)
 
@@ -77,7 +87,7 @@ export class WebSpeechAdapter implements OrbzVoiceEnginePort {
 
         finish(createSpeechStartError())
         synthesis.cancel()
-      }, SPEECH_START_TIMEOUT)
+      }, orbzConfiguration.speech.webSpeech.speechStartTimeoutMs)
 
       const finish = (error?: Error): void => {
         if (settled) {
@@ -114,7 +124,15 @@ export class WebSpeechAdapter implements OrbzVoiceEnginePort {
       utterance.addEventListener('end', handleEnd, { once: true })
       utterance.addEventListener('error', handleError, { once: true })
       utterance.addEventListener('start', handleStart, { once: true })
-      synthesis.speak(utterance)
+      try {
+        synthesis.speak(utterance)
+      } catch (error) {
+        finish(
+          error instanceof Error && error.name === 'NotAllowedError'
+            ? createSpeechError('not-allowed')
+            : new Error('Speech synthesis could not be started.')
+        )
+      }
     }).finally(() => {
       if (this.#activeSpeech === activeSpeech) {
         this.#activeSpeech = undefined
@@ -123,20 +141,25 @@ export class WebSpeechAdapter implements OrbzVoiceEnginePort {
   }
 
   stop(): void {
-    const synthesis = globalThis.speechSynthesis
-    if (synthesis?.speaking || synthesis?.pending) {
-      synthesis.cancel()
-    }
+    this.#run += 1
+    this.#voiceLoadController?.abort()
+    this.#voiceLoadController = undefined
 
     const activeSpeech = this.#activeSpeech
     this.#activeSpeech = undefined
     activeSpeech?.cancel()
+
+    const synthesis = globalThis.speechSynthesis
+    if (synthesis?.speaking || synthesis?.pending) {
+      synthesis.cancel()
+    }
   }
 }
 
 async function loadVoices(
   synthesis: SpeechSynthesis,
-  timeoutMs: number
+  timeoutMs: number,
+  signal: AbortSignal
 ): Promise<readonly SpeechSynthesisVoice[]> {
   const availableVoices = synthesis.getVoices()
   if (availableVoices.length > 0 || timeoutMs === 0) {
@@ -144,12 +167,19 @@ async function loadVoices(
   }
 
   return new Promise((resolve) => {
+    let settled = false
     const timer = globalThis.setTimeout(finish, timeoutMs)
 
     function finish(): void {
+      if (settled) {
+        return
+      }
+
+      settled = true
       globalThis.clearTimeout(timer)
       synthesis.removeEventListener('voiceschanged', handleVoicesChanged)
-      resolve(synthesis.getVoices())
+      signal.removeEventListener('abort', finish)
+      resolve(signal.aborted ? [] : synthesis.getVoices())
     }
 
     function handleVoicesChanged(): void {
@@ -159,6 +189,10 @@ async function loadVoices(
     }
 
     synthesis.addEventListener('voiceschanged', handleVoicesChanged)
+    signal.addEventListener('abort', finish, { once: true })
+    if (signal.aborted) {
+      finish()
+    }
   })
 }
 
@@ -220,7 +254,9 @@ function scoreVoice(
 
 function normalizeLanguage(value: string | undefined): string {
   const normalized = value?.trim()
-  return normalized && normalized.length > 0 ? normalized : DEFAULT_SPEECH_LANGUAGE
+  return normalized && normalized.length > 0
+    ? normalized
+    : orbzConfiguration.speech.webSpeech.language
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {

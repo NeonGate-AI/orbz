@@ -5,9 +5,12 @@ import type {
   OrbzState
 } from '@core/appearance/appearance.types'
 import type { OrbzElement } from '@element/element.types'
+import type { OrbzRealtimeSession, OrbzVoiceModel } from '@talk/voice-model.types'
 import type { DetailedHTMLProps, HTMLAttributes } from 'react'
 
 export interface OrbzReactAttributes {
+  voiceModel?: OrbzVoiceModel
+  realtimeSession?: OrbzRealtimeSession
   'color-accent'?: string
   'color-background'?: string
   'color-highlight'?: string

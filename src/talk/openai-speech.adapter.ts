@@ -1,3 +1,4 @@
+import { orbzConfiguration } from '@core/config.data'
 import type { OrbzVoiceEnginePort } from '@ports/voice-engine.port'
 
 import type {
@@ -11,12 +12,12 @@ interface ActiveAudio {
   finish(): void
 }
 
-const DEFAULT_INSTRUCTIONS =
-  'Fale em português do Brasil com dicção natural, ritmo calmo e entonação conversacional. ' +
-  'Não traduza nomes próprios nem invente conteúdo além do texto recebido.'
-const DEFAULT_MODEL = 'gpt-4o-mini-tts'
-const DEFAULT_RESPONSE_FORMAT = 'mp3'
-const DEFAULT_VOICE = 'marin'
+class SpeechAdapterError extends Error {
+  constructor(message: string, name = 'Error') {
+    super(message)
+    this.name = name
+  }
+}
 
 /**
  * Plays OpenAI text-to-speech audio returned by an implementer-owned endpoint.
@@ -32,6 +33,7 @@ export class OpenAISpeechAdapter implements OrbzVoiceEnginePort {
   readonly #headers: Readonly<Record<string, string>>
   readonly #instructions: string
   readonly #model: OpenAISpeechModel
+  readonly #requestTimeoutMs: number
   readonly #responseFormat: OpenAISpeechFormat
   #run = 0
   readonly #voice: OpenAISpeechVoice
@@ -42,13 +44,19 @@ export class OpenAISpeechAdapter implements OrbzVoiceEnginePort {
       throw new TypeError('OpenAI speech endpoint must not be empty.')
     }
 
-    this.#credentials = options.credentials ?? 'same-origin'
+    const defaults = orbzConfiguration.speech.openaiSpeech
+    this.#credentials = options.credentials ?? defaults.credentials
     this.#endpoint = endpoint
     this.#fetch = options.fetch ?? globalThis.fetch
     this.#headers = Object.freeze({ ...options.headers })
-    this.#instructions = options.instructions ?? DEFAULT_INSTRUCTIONS
-    this.#model = options.model ?? DEFAULT_MODEL
-    this.#responseFormat = options.responseFormat ?? DEFAULT_RESPONSE_FORMAT
+    this.#instructions = options.instructions ?? defaults.instructions
+    this.#model = options.model ?? defaults.model
+    const requestTimeoutMs = options.requestTimeoutMs ?? defaults.requestTimeoutMs
+    this.#requestTimeoutMs =
+      Number.isFinite(requestTimeoutMs) && requestTimeoutMs > 0
+        ? Math.min(requestTimeoutMs, 2_147_483_647)
+        : defaults.requestTimeoutMs
+    this.#responseFormat = options.responseFormat ?? defaults.responseFormat
     this.#voice = options.voice ?? defaultVoiceForModel(this.#model)
   }
 
@@ -57,7 +65,8 @@ export class OpenAISpeechAdapter implements OrbzVoiceEnginePort {
     if (normalizedText.length === 0) {
       return
     }
-    if (!this.#fetch) {
+    const fetch = this.#fetch
+    if (!fetch) {
       throw new Error('Fetch is not available in this environment.')
     }
 
@@ -82,38 +91,33 @@ export class OpenAISpeechAdapter implements OrbzVoiceEnginePort {
         body.instructions = this.#instructions
       }
 
-      const response = await this.#fetch(this.#endpoint, {
-        body: JSON.stringify(body),
-        credentials: this.#credentials,
-        headers,
-        method: 'POST',
-        signal: abortController.signal
-      })
-
-      if (run !== this.#run) {
-        return
-      }
-      if (!response.ok) {
-        const detail = (await response.text()).trim()
-        throw new Error(
-          `OpenAI speech endpoint failed with ${response.status}` +
-            (detail.length > 0 ? `: ${detail.slice(0, 300)}` : '.')
-        )
-      }
-
-      const audioBlob = await response.blob()
+      const audioBlob = await requestSpeechAudio(
+        () =>
+          fetch(this.#endpoint, {
+            body: JSON.stringify(body),
+            credentials: this.#credentials,
+            headers,
+            method: 'POST',
+            signal: abortController.signal
+          }),
+        abortController,
+        this.#requestTimeoutMs
+      )
       if (run !== this.#run) {
         return
       }
 
       await this.#play(audioBlob, run)
     } catch (error) {
-      if (run !== this.#run && isAbortError(error)) {
+      if (run !== this.#run) {
         return
       }
 
-      throw error
+      throw error instanceof SpeechAdapterError
+        ? error
+        : new SpeechAdapterError('OpenAI speech request failed.')
     } finally {
+      abortController.abort()
       if (this.#abortController === abortController) {
         this.#abortController = undefined
       }
@@ -133,64 +137,133 @@ export class OpenAISpeechAdapter implements OrbzVoiceEnginePort {
   async #play(audioBlob: Blob, run: number): Promise<void> {
     const AudioConstructor = globalThis.Audio
     if (typeof AudioConstructor !== 'function') {
-      throw new Error('Audio playback is not available in this environment.')
+      throw new SpeechAdapterError('Audio playback is not available in this environment.')
     }
 
     const objectUrl = URL.createObjectURL(audioBlob)
-    const audio = new AudioConstructor(objectUrl)
-    audio.preload = 'auto'
+    let activeAudio: ActiveAudio | undefined
 
-    await new Promise<void>((resolve, reject) => {
-      let settled = false
+    try {
+      const audio = new AudioConstructor(objectUrl)
+      audio.preload = 'auto'
 
-      const finish = (error?: Error): void => {
-        if (settled) {
-          return
+      await new Promise<void>((resolve, reject) => {
+        let settled = false
+
+        const finish = (error?: Error): void => {
+          if (settled) {
+            return
+          }
+
+          settled = true
+          audio.removeEventListener('ended', handleEnded)
+          audio.removeEventListener('error', handleError)
+          try {
+            audio.pause()
+          } catch {
+            // A failed pause must not prevent cancellation from settling.
+          }
+
+          if (error) {
+            reject(error)
+          } else {
+            resolve()
+          }
         }
 
-        settled = true
-        audio.pause()
-        audio.removeEventListener('ended', handleEnded)
-        audio.removeEventListener('error', handleError)
-        URL.revokeObjectURL(objectUrl)
-
-        if (error) {
-          reject(error)
-        } else {
-          resolve()
+        const handleEnded = (): void => finish()
+        const handleError = (): void => {
+          finish(new SpeechAdapterError('The generated speech audio could not be played.'))
         }
-      }
 
-      const handleEnded = (): void => finish()
-      const handleError = (): void => {
-        finish(new Error('The generated speech audio could not be played.'))
-      }
+        activeAudio = { finish }
+        this.#activeAudio = activeAudio
+        audio.addEventListener('ended', handleEnded, { once: true })
+        audio.addEventListener('error', handleError, { once: true })
 
-      this.#activeAudio = { finish }
-      audio.addEventListener('ended', handleEnded, { once: true })
-      audio.addEventListener('error', handleError, { once: true })
-
-      void audio.play().catch((error: unknown) => {
-        finish(toPlaybackError(error))
+        try {
+          void audio.play().catch((error: unknown) => {
+            finish(toPlaybackError(error))
+          })
+        } catch (error) {
+          finish(toPlaybackError(error))
+        }
       })
-    }).finally(() => {
-      if (run === this.#run) {
+    } catch (error) {
+      throw error instanceof SpeechAdapterError ? error : toPlaybackError(error)
+    } finally {
+      URL.revokeObjectURL(objectUrl)
+      if (run === this.#run && this.#activeAudio === activeAudio) {
         this.#activeAudio = undefined
       }
-    })
+    }
   }
 }
 
-function isAbortError(error: unknown): boolean {
-  return error instanceof Error && error.name === 'AbortError'
+function requestSpeechAudio(
+  request: () => Promise<Response>,
+  abortController: AbortController,
+  timeoutMs: number
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    let settled = false
+    const signal = abortController.signal
+    const timer = globalThis.setTimeout(() => {
+      settle(() =>
+        reject(new SpeechAdapterError('OpenAI speech request timed out.', 'TimeoutError'))
+      )
+      abortController.abort()
+    }, timeoutMs)
+
+    function settle(finish: () => void): void {
+      if (settled) {
+        return
+      }
+
+      settled = true
+      globalThis.clearTimeout(timer)
+      signal.removeEventListener('abort', handleAbort)
+      finish()
+    }
+
+    function handleAbort(): void {
+      settle(() =>
+        reject(new SpeechAdapterError('OpenAI speech request was canceled.', 'AbortError'))
+      )
+    }
+
+    signal.addEventListener('abort', handleAbort, { once: true })
+    if (signal.aborted) {
+      handleAbort()
+      return
+    }
+
+    void (async () => {
+      const response = await request()
+      if (signal.aborted) {
+        throw new SpeechAdapterError('OpenAI speech request was canceled.', 'AbortError')
+      }
+      if (!response.ok) {
+        throw new SpeechAdapterError(`OpenAI speech endpoint failed with ${response.status}.`)
+      }
+
+      return response.blob()
+    })().then(
+      (blob) => settle(() => resolve(blob)),
+      (error: unknown) => settle(() => reject(error))
+    )
+  })
 }
 
 function toPlaybackError(error: unknown): Error {
-  if (error instanceof Error) {
-    return error
+  if (error instanceof Error && error.name === 'NotAllowedError') {
+    return new SpeechAdapterError(
+      'Speech playback requires a user interaction in this browser.',
+      'NotAllowedError'
+    )
   }
 
-  return new Error('Speech audio playback failed.')
+  return new SpeechAdapterError('Speech audio playback failed.')
 }
 
 function supportsInstructions(model: OpenAISpeechModel): boolean {
@@ -198,5 +271,6 @@ function supportsInstructions(model: OpenAISpeechModel): boolean {
 }
 
 function defaultVoiceForModel(model: OpenAISpeechModel): OpenAISpeechVoice {
-  return model === 'tts-1' || model === 'tts-1-hd' ? 'alloy' : DEFAULT_VOICE
+  const defaults = orbzConfiguration.speech.openaiSpeech
+  return model === 'tts-1' || model === 'tts-1-hd' ? defaults.legacyVoice : defaults.voice
 }

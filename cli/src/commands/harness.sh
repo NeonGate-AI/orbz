@@ -5,6 +5,7 @@ orb_require_repository_source
 
 case "${1:-}" in
   --help|-h)
+    [ "$#" -eq 1 ] || orb_die 'Harness help does not accept additional arguments.' 2
     cat <<'USAGE'
 Usage: orb harness [harness-score arguments]
 

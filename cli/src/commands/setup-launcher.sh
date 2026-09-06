@@ -10,6 +10,7 @@ orb_bin_dir=${ORB_BIN_DIR:-}
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --bin-dir)
+      orb_require_option_value "$1" "${2:-}"
       shift
       [ "$#" -gt 0 ] || orb_die '--bin-dir requires a directory' 2
       orb_bin_dir=$1
@@ -20,9 +21,10 @@ while [ "$#" -gt 0 ]; do
     --launcher)
       ;;
     --help|-h)
+      [ "$#" -eq 1 ] || orb_die 'Launcher setup help does not accept additional arguments.' 2
       cat <<'EOF'
 Usage:
-  orb setup --launcher [--bin-dir <directory>]
+  orb setup [--launcher] [--bin-dir <directory>]
 
 Destination precedence:
   --bin-dir, ORB_BIN_DIR, PNPM_HOME, XDG_BIN_HOME, ~/.local/bin
@@ -67,10 +69,31 @@ elif [ -e "$orb_target" ]; then
   [ "$orb_marker" = '# managed-by: orbz-orb' ] || orb_die "Unmanaged command already exists: $orb_target"
 fi
 
-orb_tmp_dir="$orb_bin_dir/.orb.tmp.$$"
-(umask 077 && mkdir "$orb_tmp_dir") || orb_die "Cannot reserve temporary directory in $orb_bin_dir"
+orb_tmp_dir=
+orb_tmp=
+orb_setup_cleanup() {
+  [ -z "$orb_tmp" ] || rm -f "$orb_tmp"
+  [ -z "$orb_tmp_dir" ] || rmdir "$orb_tmp_dir" 2>/dev/null || :
+}
+orb_setup_on_signal() {
+  trap - 0 1 2 15
+  orb_setup_cleanup
+  exit 1
+}
+trap orb_setup_cleanup 0
+trap orb_setup_on_signal 1 2 15
+
+orb_tmp_attempt=0
+while [ "$orb_tmp_attempt" -lt 100 ]; do
+  orb_tmp_attempt=$((orb_tmp_attempt + 1))
+  orb_tmp_candidate="$orb_bin_dir/.orb.tmp.$$.$orb_tmp_attempt"
+  if (umask 077 && mkdir "$orb_tmp_candidate") 2>/dev/null; then
+    orb_tmp_dir=$orb_tmp_candidate
+    break
+  fi
+done
+[ -n "$orb_tmp_dir" ] || orb_die "Cannot reserve temporary directory in $orb_bin_dir"
 orb_tmp="$orb_tmp_dir/orb"
-trap 'rm -f "$orb_tmp"; rmdir "$orb_tmp_dir" 2>/dev/null || :' 0 1 2 15
 
 orb_fallback_root=$(orb_shell_quote "$ORB_PROJECT_ROOT")
 {
@@ -100,7 +123,9 @@ if [ -x "$orb_target" ] && cmp -s "$orb_tmp" "$orb_target"; then
 fi
 
 mv "$orb_tmp" "$orb_target"
+orb_tmp=
 rmdir "$orb_tmp_dir"
+orb_tmp_dir=
 trap - 0 1 2 15
 
 printf 'Orb launcher installed at %s\n' "$orb_target"

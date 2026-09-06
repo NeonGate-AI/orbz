@@ -22,6 +22,20 @@ npx -y --package=@neongate-ai/orbz@latest orb  # consumer project setup
 Command modules live under `cli/src/commands/`; shared output and filesystem
 helpers live under `cli/src/core/`.
 
+With no arguments, the checkout entry point shows help. Find command details
+with `orb help setup`, `orb help git lint`, or `orb git lint --help`.
+`orb git` and `orb git help` show the Git command catalog. Help stays local and
+does not execute the selected command.
+
+`--logs` is repeatable before or immediately after a command and at each Git
+command level, for example `orb --logs doctor`, `orb doctor --logs`, or
+`orb git doctor --logs --ci`. Diagnostics go to stderr. Arguments following
+command options are left for that command or its delegated utility; put Orb's
+diagnostic flag before those options. Unknown commands, invalid options,
+missing option values and incompatible Git lint modes return status 2.
+Missing required executables return 127; delegated utilities retain their
+own exit status. ANSI output is disabled by `NO_COLOR` or noninteractive stdout.
+
 `npx` is transient and does not add a global `orb` command to the user's PATH.
 Once Orbz is a project dependency, use the package manager's local executable
 runner, for example `pnpm exec orb --help` or `npm exec -- orb --help`.
@@ -51,8 +65,22 @@ project-setup flow.
 | `orb git lint` | Validate the latest commit or a revision range. |
 | `orb git version-check` | Require canonical, forward-only SemVer changes. |
 
+`orb install` is a repository-only alias for `orb bootstrap`. `orb clean` aliases
+`orb cleanup`, and `orb neon` aliases `orb harness`. `orb version`, `orb --version`
+and `orb -V` print the executing package version.
+
 `orb git commit message <file>` and `orb git commit-msg <file>` are aliases for
-`orb git commit-message <file>`.
+`orb git commit-message <file>`. `orb git commits` retains the existing
+commit-history validation interface (`--last` or `--from` plus `--to`).
+
+Repository setup defaults to the optional launcher, so `./cli/orb setup` and
+`./cli/orb setup --launcher` are equivalent. The launcher delegates to the
+checkout that most recently completed setup, regardless of the caller's working
+directory. After moving that checkout, run setup again from its new location.
+The launcher destination is selected from `--bin-dir`, `ORB_BIN_DIR`,
+`PNPM_HOME`, `XDG_BIN_HOME`, then `$HOME/.local/bin`. Existing managed launchers
+can be refreshed; unmanaged paths and symlinks are refused. A missing PATH entry
+is reported for the user to configure.
 
 ## Consumer project setup
 
