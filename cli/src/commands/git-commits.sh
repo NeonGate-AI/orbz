@@ -35,8 +35,9 @@ Usage:
   orb git commits --last
   orb git commits --from <ref> --to <ref>
 
-Validate committed history using Commitlint and the repository Conventional
-Commits policy.
+Validate non-merge history using Commitlint and the repository Conventional
+Commits policy. For a merge HEAD, --last validates the changes introduced
+relative to its first parent; merge envelopes are not linted.
 USAGE
       exit 0
       ;;
@@ -51,10 +52,10 @@ orb_git_checkout || orb_die 'Commit history validation must run inside the Orbz 
 cd "$ORB_PROJECT_ROOT"
 
 case "$mode" in
-  last) exec pnpm exec commitlint --last --verbose ;;
+  last) orb_lint_commit_history last ;;
   range)
     [ -n "$from_ref" ] && [ -n "$to_ref" ] || orb_die 'Both --from and --to are required.' 2
-    exec pnpm exec commitlint --from "$from_ref" --to "$to_ref" --verbose
+    orb_lint_commit_history range "$from_ref" "$to_ref"
     ;;
   *) orb_die 'Usage: orb git commits --last | --from <ref> --to <ref>' 2 ;;
 esac

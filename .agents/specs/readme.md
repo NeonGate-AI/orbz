@@ -43,3 +43,10 @@ status only when the corresponding evidence is available.
 
 - [SPEC-023](./023-refine-readme-presentation.spec.md): implemented formatting-only
   refinement with exact content preservation, documentation audits and review guidance.
+
+## First major release
+
+- [SPEC-024](./024-first-major-release.spec.md): in progress; the owner explicitly
+  authorized main promotion, v1.0.0 tagging and npm publication on 2026-09-06.
+  This supersedes PR #12's earlier minor-release plan. Publication is complete
+  only after registry verification; release preparation alone is insufficient.

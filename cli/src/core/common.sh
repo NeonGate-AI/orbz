@@ -91,6 +91,30 @@ orb_git_checkout() {
   git -C "$ORB_PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1
 }
 
+orb_lint_commit_history() {
+  orb_need git
+  orb_need pnpm
+  orb_git_checkout || orb_die 'Commit history validation must run inside the Orbz checkout.'
+  cd "$ORB_PROJECT_ROOT"
+
+  if [ "$1" = last ]; then
+    if git rev-parse --verify --quiet 'HEAD^2' >/dev/null; then
+      # Validate changes introduced by the merge, not its integration envelope.
+      orb_history_commits=$(git rev-list --no-merges 'HEAD^1..HEAD') || return 1
+    else
+      orb_history_commits=$(git rev-parse --verify HEAD) || return 1
+    fi
+  else
+    git merge-base "$2" "$3" >/dev/null || orb_die 'Commit history requires refs with a shared, available merge base.'
+    orb_history_commits=$(git rev-list --no-merges "$2..$3") || return 1
+  fi
+  # Commitlint's Git reader may ignore arbitrary log flags; filter with Git itself.
+  for orb_history_commit in $orb_history_commits; do
+    orb_history_message=$(git show -s --format=%B "$orb_history_commit") || return 1
+    printf '%s\n' "$orb_history_message" | pnpm exec commitlint --verbose || return "$?"
+  done
+}
+
 orb_is_repository_source() {
   [ -d "$ORB_PROJECT_ROOT/.agents" ] &&
     [ -d "$ORB_PROJECT_ROOT/.audits" ] &&

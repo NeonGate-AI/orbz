@@ -22,3 +22,5 @@ globs:
 7. Release planning treats `fix` and `perf` as patch signals, `feat` as a minor signal, and `!` or `BREAKING CHANGE` as a major signal.
 8. Git quality tools are development dependencies and must not enter the runtime payload.
 9. CI validates the relevant commit range in addition to running the package quality gate.
+10. Committed-history validation (`orb git lint` and `orb git commits`) checks every non-merge commit in the requested range. Git parent topology identifies integration merge envelopes; their generated messages are excluded, regardless of subject wording. A single-parent commit with a merge-looking subject remains fully validated.
+11. `--last` validates HEAD normally when it is not a merge. For a merge HEAD, it validates all non-merge commits introduced relative to the first parent (`HEAD^1..HEAD`), including commits reached through nested merges. The commit-message hook remains strict; new owner-authored merge messages should still use Conventional Commits and wrap body lines at 100 characters.
